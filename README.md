@@ -15,7 +15,7 @@ A precision economy calculator for Hypixel Skyblock's Glacite Tunnels mineshafts
 | Field | Description |
 |-------|-------------|
 | **Spawn Bonus %** | Your base spawn chance modifier |
-| **Time to Pity** | Seconds until guaranteed spawn (min 60) |
+| **Time to Pity** | Seconds until guaranteed spawn  |
 | **Mineshaft Stats** | Fortune, Pristine, Cold Resistance, Fines per 1L Jasper |
 
 ### Advanced Settings (Click to Expand)
