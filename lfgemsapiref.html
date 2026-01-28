@@ -1,0 +1,1980 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Shafting Calculator 1.0</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/chartjs-plugin-annotation"></script>
+    <style>
+        body {
+            /* Background Image */
+            background: url('glacite_tunnels.png') no-repeat center center fixed;
+            background-size: cover;
+            color: #f8fafc;
+            font-family: 'Inter', system-ui;
+        }
+
+        /* Glassmorphism Update */
+        .glass {
+            background: rgba(2, 6, 23, 0.7);
+            /* Darker, more transparent slate-950 */
+            backdrop-filter: blur(12px);
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            box-shadow: 0 4px 30px rgba(0, 0, 0, 0.5);
+        }
+
+        /* Input Spinner Removal */
+        input[type=number]::-webkit-inner-spin-button,
+        input[type=number]::-webkit-outer-spin-button {
+            -webkit-appearance: none;
+            appearance: none;
+            margin: 0;
+        }
+
+        input[type=number] {
+            -moz-appearance: textfield;
+            appearance: textfield;
+        }
+
+        .accent-cyan {
+            color: #22d3ee;
+        }
+
+        .accent-gold {
+            color: #facc15;
+        }
+
+        .accent-purple {
+            color: #c084fc;
+        }
+
+        .accent-red {
+            color: #f87171;
+        }
+
+        .processing {
+            cursor: wait;
+            opacity: 0.7;
+            pointer-events: none;
+        }
+
+        .btn-reset {
+            border: 1px solid #334155;
+            color: #94a3b8;
+            transition: all 0.2s;
+        }
+
+        .btn-reset:hover {
+            background: #ef4444;
+            color: white;
+            border-color: #ef4444;
+        }
+
+        /* Table Styling */
+        .report-table {
+            width: 100%;
+            text-align: left;
+            font-size: 11px;
+            border-collapse: separate;
+            border-spacing: 0;
+        }
+
+        .report-table th {
+            color: #94a3b8;
+            font-weight: 700;
+            padding: 12px 16px;
+            border-bottom: 1px solid #1e293b;
+            text-transform: uppercase;
+            letter-spacing: 0.05em;
+        }
+
+        .report-table td {
+            padding: 12px 16px;
+            border-bottom: 1px solid #1e293b;
+            color: #cbd5e1;
+            font-family: 'Monaco', monospace;
+        }
+
+        .report-table tr:last-child td {
+            border-bottom: none;
+        }
+
+        ::-webkit-scrollbar {
+            width: 6px;
+        }
+
+        ::-webkit-scrollbar-track {
+            background: rgba(15, 23, 42, 0.5);
+            /* Semi-transparent track */
+        }
+
+        ::-webkit-scrollbar-thumb {
+            background: #334155;
+            border-radius: 4px;
+        }
+    </style>
+</head>
+
+<body class="p-4 md:p-8 min-h-screen">
+    <div class="max-w-7xl mx-auto">
+        <header class="mb-8 flex flex-col md:flex-row justify-between items-end border-b border-slate-800 pb-6">
+            <div>
+                <h1 class="text-4xl font-black tracking-tighter uppercase italic">Shafting <span
+                        class="accent-cyan">Calculator</span></h1>
+                <p class="text-slate-500 font-mono text-[10px] tracking-widest mt-1">”Not_VIBE_CODED” //
+                    @thunderrbird</p>
+            </div>
+            <div id="statusTag"
+                class="hidden bg-cyan-500/10 text-cyan-400 px-4 py-1 rounded-full text-[10px] font-bold border border-cyan-500/20 animate-pulse">
+                CALCULATING...
+            </div>
+        </header>
+
+        <div class="grid grid-cols-1 lg:grid-cols-12 gap-6">
+            <div class="lg:col-span-3 space-y-6">
+                <div class="glass p-6 rounded-3xl shadow-2xl" id="controlPanel">
+                    <div class="space-y-4">
+                        <div>
+                            <label class="block text-[10px] font-bold text-slate-500 uppercase mb-1">Spawn Bonus
+                                (%)</label>
+                            <input type="number" id="pctInput" value="25.75"
+                                class="w-full bg-slate-900 border border-slate-700 rounded-xl p-2 text-cyan-400 outline-none focus:ring-1 ring-cyan-500 font-bold text-sm">
+                        </div>
+                        <div>
+                            <label class="block text-[10px] font-bold text-slate-500 uppercase mb-1">Time to Pity
+                                (s)</label>
+                            <input type="number" id="timeInput" value="60" min="60"
+                                class="w-full bg-slate-900 border border-slate-700 rounded-xl p-2 text-cyan-400 outline-none focus:ring-1 ring-cyan-500 font-bold text-sm">
+                        </div>
+
+
+                        <div class="bg-slate-900/50 p-3 rounded-xl space-y-2 border border-emerald-800/50">
+                            <p class="text-[9px] font-bold text-emerald-400 uppercase">Mineshaft Stats</p>
+                            <div class="grid grid-cols-2 gap-2">
+                                <div
+                                    class="flex items-center justify-between bg-slate-950/50 p-1.5 rounded border border-slate-800">
+                                    <label class="text-[8px] font-bold text-slate-500 uppercase mr-1">Fortune</label>
+                                    <input type="number" id="mineshaftFortune" value="1800"
+                                        class="flex-1 min-w-0 bg-transparent text-right text-[10px] text-emerald-300 font-bold outline-none border-none p-0">
+                                </div>
+                                <div
+                                    class="flex items-center justify-between bg-slate-950/50 p-1.5 rounded border border-slate-800">
+                                    <label class="text-[8px] font-bold text-slate-500 uppercase mr-1">Pristine</label>
+                                    <input type="number" id="mineshaftPristine" value="16" step="0.1"
+                                        class="flex-1 min-w-0 bg-transparent text-right text-[10px] text-emerald-300 font-bold outline-none border-none p-0">
+                                </div>
+                                <div
+                                    class="flex items-center justify-between bg-slate-950/50 p-1.5 rounded border border-slate-800">
+                                    <label class="text-[8px] font-bold text-slate-500 uppercase mr-1">Cold Res.</label>
+                                    <input type="number" id="coldResistance" value="0" step="1"
+                                        class="flex-1 min-w-0 bg-transparent text-right text-[10px] text-cyan-300 font-bold outline-none border-none p-0">
+                                </div>
+                                <div
+                                    class="flex items-center justify-between bg-slate-950/50 p-1.5 rounded border border-slate-800">
+                                    <label class="text-[8px] font-bold text-slate-500 uppercase mr-1">Fines/1L</label>
+                                    <input type="number" id="avgFinesJasper" value="0" step="1"
+                                        class="flex-1 min-w-0 bg-transparent text-right text-[10px] text-pink-400 font-bold outline-none border-none p-0">
+                                </div>
+                            </div>
+                        </div>
+
+                        <div class="border-t border-slate-800 pt-4">
+                            <button onclick="toggleAdvanced()"
+                                class="flex items-center justify-between w-full text-[10px] font-bold text-slate-400 uppercase tracking-widest hover:text-cyan-400 transition-colors">
+                                <span>Advanced Settings</span>
+                                <span id="advArrow">▼</span>
+                            </button>
+
+                            <div id="advancedSettings"
+                                class="hidden space-y-3 mt-3 animate-in slide-in-from-top-2 duration-200">
+
+                                <div class="bg-slate-900/50 p-2 rounded-lg space-y-2 border border-indigo-800/50">
+                                    <p class="text-[9px] font-bold text-indigo-500 uppercase">Player Stats (Glacite
+                                        Tunnels)
+                                    </p>
+                                    <div class="grid grid-cols-3 gap-2">
+                                        <div>
+                                            <label
+                                                class="block text-[8px] font-bold text-slate-500 uppercase mb-1">Mining
+                                                Fortune</label>
+                                            <input type="number" id="miningFortune" value="1800"
+                                                class="w-full bg-slate-950 border border-slate-800 rounded p-1 text-[10px] text-white">
+                                        </div>
+                                        <div>
+                                            <label
+                                                class="block text-[8px] font-bold text-slate-500 uppercase mb-1">Pristine</label>
+                                            <input type="number" id="pristine" value="16" step="0.1"
+                                                class="w-full bg-slate-950 border border-slate-800 rounded p-1 text-[10px] text-white">
+                                        </div>
+                                        <div>
+                                            <label class="block text-[8px] font-bold text-slate-500 uppercase mb-1">DM
+                                                Fortune</label>
+                                            <input type="number" id="dwarvenMetalFortune" value="1800"
+                                                class="w-full bg-slate-950 border border-slate-800 rounded p-1 text-[10px] text-cyan-300">
+                                        </div>
+                                    </div>
+                                    <!-- Moved Spawning Gems Sell Offers -->
+                                    <div class="flex items-center gap-2 pt-1 border-t border-blue-900/30">
+                                        <input type="checkbox" id="useGemSellOrder" checked
+                                            class="rounded border-slate-800 bg-slate-950">
+                                        <label for="useGemSellOrder"
+                                            class="text-[9px] font-bold text-slate-400 uppercase cursor-pointer">Sell
+                                            Offer Spawning
+                                            Gems</label>
+                                    </div>
+                                </div>
+
+
+
+                                <div class="bg-slate-900/50 p-2 rounded-lg space-y-2 border border-pink-900">
+                                    <p class="text-[9px] font-bold text-pink-400 uppercase">Jasper Price Override</p>
+                                    <div>
+                                        <label class="block text-[9px] font-bold text-slate-500 uppercase mb-1">Manual
+                                            Flawless Jasper Price (0 = use API)</label>
+                                        <input type="number" id="jasperPriceOverride" value="0" min="0"
+                                            class="w-full bg-slate-950 border border-slate-800 rounded p-1 text-[10px] text-pink-300">
+                                    </div>
+                                    <div class="flex items-center gap-2 pt-1">
+                                        <input type="checkbox" id="useFineJasper"
+                                            class="rounded border-slate-800 bg-slate-950">
+                                        <label for="useFineJasper"
+                                            class="text-[9px] font-bold text-slate-400 uppercase cursor-pointer">Use
+                                            FINE_JASPER_GEM (×80 for price)</label>
+                                    </div>
+                                </div>
+
+                                <div class="bg-slate-900/50 p-2 rounded-lg space-y-2 border border-purple-900">
+                                    <p class="text-[9px] font-bold text-purple-400 uppercase">Jasper Modifiers</p>
+                                    <div>
+                                        <label class="block text-[9px] font-bold text-slate-500 uppercase mb-1">Corpses
+                                            Looted</label>
+                                        <select id="jasperCorpses"
+                                            class="w-full bg-slate-950 border border-slate-800 rounded p-1 text-[10px] text-purple-300">
+                                            <option value="1">1 Corpse (Base)</option>
+                                            <option value="2">2 Corpses (+1 Pristine)</option>
+                                            <option value="3">3 Corpses (+2 Pristine)</option>
+                                            <option value="4">4 Corpses (+3 Pristine)</option>
+                                        </select>
+                                    </div>
+                                    <div class="flex flex-col gap-1 pt-1">
+                                        <div class="flex items-center gap-2">
+                                            <input type="checkbox" id="jasperFortune50"
+                                                class="rounded border-slate-800 bg-slate-950">
+                                            <label for="jasperFortune50"
+                                                class="text-[9px] font-bold text-slate-400 uppercase cursor-pointer">+50
+                                                Fortune (HOTM)</label>
+                                        </div>
+                                        <div class="flex items-center gap-2">
+                                            <input type="checkbox" id="jasperFortune100"
+                                                class="rounded border-slate-800 bg-slate-950">
+                                            <label for="jasperFortune100"
+                                                class="text-[9px] font-bold text-slate-400 uppercase cursor-pointer">+100
+                                                Fortune (HOTM)</label>
+                                        </div>
+                                        <div class="flex items-center gap-2">
+                                            <input type="checkbox" id="jasperFrontLoaded"
+                                                class="rounded border-slate-800 bg-slate-950">
+                                            <label for="jasperFrontLoaded"
+                                                class="text-[9px] font-bold text-green-400 uppercase cursor-pointer">+150
+                                                Fortune (Front Loaded)</label>
+                                        </div>
+                                        <div class="flex items-center gap-2 pt-1 border-t border-purple-900/30 mt-1">
+                                            <input type="checkbox" id="jasperRateMultiplier" checked
+                                                class="rounded border-slate-800 bg-slate-950">
+                                            <label for="jasperRateMultiplier"
+                                                class="text-[9px] font-bold text-amber-400 uppercase cursor-pointer">Use
+                                                Calc. Corpses (1.25l+DMC)</label>
+                                        </div>
+                                        <div class="flex items-center gap-2 pt-1 border-t border-purple-900/30 mt-1">
+                                            <input type="checkbox" id="mineJasperCrystal"
+                                                class="rounded border-slate-800 bg-slate-950">
+                                            <label for="mineJasperCrystal"
+                                                class="text-[9px] font-bold text-[#CB1372] uppercase cursor-pointer">Mine
+                                                Jasper Crystal Shafts</label>
+                                        </div>
+                                        <div id="jasperCrystalInputDiv" class="hidden pl-5">
+                                            <label
+                                                class="block text-[8px] font-bold text-slate-500 uppercase mb-1">Fines/Jasper
+                                                Crystal Shaft</label>
+                                            <input type="number" id="finesJasperCrystal" value="0" step="1"
+                                                class="w-full bg-slate-950 border border-slate-800 rounded p-1 text-[10px] text-[#CB1372] font-bold">
+                                        </div>
+                                    </div>
+                                </div>
+
+                                <div class="bg-slate-900/50 p-2 rounded-lg space-y-2 border border-emerald-900">
+                                    <p class="text-[9px] font-bold text-emerald-400 uppercase">Crystal Config</p>
+                                    <div class="flex items-center gap-2">
+                                        <input type="checkbox" id="calcOnyxPeridot"
+                                            class="rounded border-slate-800 bg-slate-950">
+                                        <label for="calcOnyxPeridot"
+                                            class="text-[9px] font-bold text-slate-400 uppercase cursor-pointer">Calc.
+                                            Onyx & Peridot</label>
+                                    </div>
+                                    <div>
+                                        <label
+                                            class="block text-[9px] font-bold text-slate-500 uppercase mb-1">Claim/Forge
+                                            Time (s)</label>
+                                        <input type="number" id="crystalClaimTime" value="0" min="0" step="1"
+                                            class="w-full bg-slate-950 border border-slate-800 rounded p-1 text-[10px] text-emerald-300">
+                                    </div>
+                                </div>
+
+                                <div class="bg-slate-900/50 p-2 rounded-lg space-y-2 border border-blue-900">
+                                    <p class="text-[9px] font-bold text-blue-400 uppercase">Lapis + Shaft Config</p>
+                                    <!-- Moved Inputs from Profit Config -->
+                                    <div>
+                                        <label class="block text-[9px] font-bold text-slate-500 uppercase mb-1">Gifts
+                                            from Departed (0-101)</label>
+                                        <input type="number" id="gftdLevel" value="0" min="0" max="101"
+                                            class="w-full bg-slate-950 border border-slate-800 rounded p-1 text-[10px] text-white">
+                                    </div>
+                                    <div class="flex items-center gap-2 pt-1 mb-2 border-b border-slate-800 pb-2">
+                                        <input type="checkbox" id="useSellOrder"
+                                            class="rounded border-slate-800 bg-slate-950">
+                                        <label for="useSellOrder"
+                                            class="text-[9px] font-bold text-slate-400 uppercase cursor-pointer">Sell
+                                            Offer Corpse Loot</label>
+                                    </div>
+                                    <div>
+                                        <label class="block text-[9px] font-bold text-slate-500 uppercase mb-1">Dead
+                                            Man's
+                                            Chest (0-51)</label>
+                                        <input type="number" id="dmcLevel" value="0" min="0" max="51"
+                                            class="w-full bg-slate-900 border border-slate-800 rounded-lg p-2 text-xs text-white">
+                                    </div>
+
+                                    <div class="grid grid-cols-2 gap-2">
+                                        <div>
+                                            <label
+                                                class="block text-[9px] font-bold text-slate-500 uppercase mb-1">Pickob
+                                                #1
+                                                (s)</label>
+                                            <input type="number" id="tPick" value="4.0" step="0.1"
+                                                class="w-full bg-slate-900 border border-slate-800 rounded-lg p-2 text-xs text-white">
+                                        </div>
+                                        <div>
+                                            <label
+                                                class="block text-[9px] font-bold text-slate-500 uppercase mb-1">Enter
+                                                (s)</label>
+                                            <input type="number" id="tEnter" value="3.0" step="0.1"
+                                                class="w-full bg-slate-900 border border-slate-800 rounded-lg p-2 text-xs text-white">
+                                        </div>
+                                        <div>
+                                            <label class="block text-[9px] font-bold text-slate-500 uppercase mb-1">Time
+                                                To Ground
+                                                (s)</label>
+                                            <input type="number" id="tFall" value="1.5" step="0.1"
+                                                class="w-full bg-slate-900 border border-slate-800 rounded-lg p-2 text-xs text-white">
+                                        </div>
+                                        <div>
+                                            <label class="block text-[9px] font-bold text-slate-500 uppercase mb-1">Exit
+                                                (s)</label>
+                                            <input type="number" id="tExit" value="0.5" step="0.1"
+                                                class="w-full bg-slate-900 border border-slate-800 rounded-lg p-2 text-xs text-white">
+                                        </div>
+                                    </div>
+
+                                    <div class="bg-slate-900/50 p-2 rounded-lg space-y-2 border border-slate-800">
+                                        <p class="text-[9px] font-bold text-slate-500 uppercase">Loot Times (s)</p>
+                                        <div class="grid grid-cols-5 gap-1 text-center mb-1">
+                                            <span class="text-[8px] font-bold text-slate-600">0l</span>
+                                            <span class="text-[8px] font-bold text-slate-600">1l</span>
+                                            <span class="text-[8px] font-bold text-slate-600">2l</span>
+                                            <span class="text-[8px] font-bold text-slate-600">3l</span>
+                                            <span class="text-[8px] font-bold text-slate-600">4l</span>
+                                        </div>
+                                        <div class="grid grid-cols-5 gap-1">
+                                            <input type="number" id="loot0" value="1"
+                                                class="bg-slate-950 border border-slate-800 rounded p-1 text-[10px] text-center text-slate-400"
+                                                title="0 Lapis">
+                                            <input type="number" id="loot1" value="5"
+                                                class="bg-slate-950 border border-slate-800 rounded p-1 text-[10px] text-center text-cyan-400"
+                                                title="1 Lapis">
+                                            <input type="number" id="loot2" value="9"
+                                                class="bg-slate-950 border border-slate-800 rounded p-1 text-[10px] text-center text-cyan-400"
+                                                title="2 Lapis">
+                                            <input type="number" id="loot3" value="13"
+                                                class="bg-slate-950 border border-slate-800 rounded p-1 text-[10px] text-center text-cyan-400"
+                                                title="3 Lapis">
+                                            <input type="number" id="loot4" value="17"
+                                                class="bg-slate-950 border border-slate-800 rounded p-1 text-[10px] text-center text-cyan-400"
+                                                title="4 Lapis">
+                                        </div>
+                                    </div>
+
+                                    <div class="bg-slate-900/50 p-2 rounded-lg space-y-2 border border-slate-800">
+                                        <p class="text-[9px] font-bold text-slate-500 uppercase">Bad Spawn Rates (%)</p>
+                                        <div class="grid grid-cols-3 gap-1">
+                                            <div><span class="text-[8px] text-slate-600 block">1->0</span><input
+                                                    type="number" id="bad1" value="25"
+                                                    class="w-full bg-slate-950 border border-slate-800 rounded p-1 text-[10px] text-center text-red-400">
+                                            </div>
+                                            <div><span class="text-[8px] text-slate-600 block">2->1</span><input
+                                                    type="number" id="bad2" value="20"
+                                                    class="w-full bg-slate-950 border border-slate-800 rounded p-1 text-[10px] text-center text-red-400">
+                                            </div>
+                                            <div><span class="text-[8px] text-slate-600 block">3->2</span><input
+                                                    type="number" id="bad3" value="5"
+                                                    class="w-full bg-slate-950 border border-slate-800 rounded p-1 text-[10px] text-center text-red-400">
+                                            </div>
+                                        </div>
+                                    </div>
+
+                                </div>
+
+
+                                <div class="bg-slate-900/50 p-2 rounded-lg space-y-2 border border-pink-800/50">
+                                    <p class="text-[9px] font-bold text-pink-400 uppercase">Pet XP Settings</p>
+                                    <div class="grid grid-cols-2 gap-2">
+                                        <div>
+                                            <label
+                                                class="block text-[8px] font-bold text-slate-500 uppercase mb-1">Mining
+                                                Wisdom</label>
+                                            <input type="number" id="miningWisdom" value="0"
+                                                class="w-full bg-slate-950 border border-slate-800 rounded p-1 text-[10px] text-white">
+                                        </div>
+                                        <div>
+                                            <label
+                                                class="block text-[8px] font-bold text-slate-500 uppercase mb-1">Taming
+                                                Level %</label>
+                                            <input type="number" id="tamingLevel" value="0" step="0.1"
+                                                class="w-full bg-slate-950 border border-slate-800 rounded p-1 text-[10px] text-white">
+                                        </div>
+                                        <div>
+                                            <label
+                                                class="block text-[8px] font-bold text-slate-500 uppercase mb-1">Beastmaster
+                                                %</label>
+                                            <input type="number" id="beastmasterCrest" value="0" step="0.1"
+                                                class="w-full bg-slate-950 border border-slate-800 rounded p-1 text-[10px] text-white">
+                                        </div>
+                                        <div>
+                                            <label class="block text-[8px] font-bold text-slate-500 uppercase mb-1">Exp
+                                                Boost Item %</label>
+                                            <input type="number" id="expBoostItem" value="0" step="0.1"
+                                                class="w-full bg-slate-950 border border-slate-800 rounded p-1 text-[10px] text-white">
+                                        </div>
+                                        <div class="col-span-2">
+                                            <label class="block text-[8px] font-bold text-slate-500 uppercase mb-1">Misc
+                                                XP Buff %</label>
+                                            <input type="number" id="miscXpBuff" value="0" step="0.1"
+                                                class="w-full bg-slate-950 border border-slate-800 rounded p-1 text-[10px] text-white">
+                                        </div>
+                                    </div>
+                                    <div class="flex items-center gap-2 pt-1">
+                                        <input type="checkbox" id="miningPet"
+                                            class="rounded border-slate-800 bg-slate-950">
+                                        <label for="miningPet"
+                                            class="text-[9px] font-bold text-pink-300 uppercase cursor-pointer">Mining
+                                            Pet (3x XP)</label>
+                                    </div>
+                                    <div class="border-t border-slate-800 pt-2 mt-2">
+                                        <p class="text-[8px] font-bold text-purple-400 uppercase mb-1">Exp Share</p>
+                                        <div>
+                                            <label class="block text-[8px] font-bold text-slate-500 uppercase mb-1">Exp
+                                                Share %</label>
+                                            <input type="number" id="expSharePercent" value="0" step="0.1"
+                                                class="w-full bg-slate-950 border border-slate-800 rounded p-1 text-[10px] text-white">
+                                        </div>
+                                        <div class="flex items-center gap-2 pt-1">
+                                            <input type="checkbox" id="expShareMiningPet"
+                                                class="rounded border-slate-800 bg-slate-950">
+                                            <label for="expShareMiningPet"
+                                                class="text-[9px] font-bold text-purple-300 uppercase cursor-pointer">Exp
+                                                Share Mining Pet (1.5x vs 0.5x)</label>
+                                        </div>
+                                        <div class="flex items-center gap-2 pt-1">
+                                            <input type="checkbox" id="sharingIsCaring"
+                                                class="rounded border-slate-800 bg-slate-950">
+                                            <label for="sharingIsCaring"
+                                                class="text-[9px] font-bold text-purple-300 uppercase cursor-pointer">Sharing
+                                                is Caring (3x Slots)</label>
+                                        </div>
+                                    </div>
+                                    <div class="border-t border-slate-800 pt-2 mt-2">
+                                        <p class="text-[8px] font-bold text-amber-400 uppercase mb-1">XP Value</p>
+                                        <div class="grid grid-cols-2 gap-2">
+                                            <div>
+                                                <label
+                                                    class="block text-[8px] font-bold text-slate-500 uppercase mb-1">Coins/XP
+                                                    (Non-Mining)</label>
+                                                <input type="number" id="coinsPerXpNonMining" value="1" step="0.01"
+                                                    class="w-full bg-slate-950 border border-slate-800 rounded p-1 text-[10px] text-white">
+                                            </div>
+                                            <div>
+                                                <label
+                                                    class="block text-[8px] font-bold text-slate-500 uppercase mb-1">Coins/XP
+                                                    (Mining)</label>
+                                                <input type="number" id="coinsPerXpMining" value="0.35" step="0.01"
+                                                    class="w-full bg-slate-950 border border-slate-800 rounded p-1 text-[10px] text-white">
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+
+                        <button onclick="startCompute()"
+                            class="w-full bg-cyan-600 hover:bg-cyan-500 text-slate-950 font-black py-4 rounded-xl transition-all shadow-xl uppercase tracking-widest text-xs mt-4">Run
+                            Engine</button>
+
+                        <div class="flex gap-2 mt-2">
+                            <button onclick="restoreSettings()" id="btnRestore"
+                                class="hidden flex-1 bg-slate-700 hover:bg-slate-600 text-slate-300 font-bold py-2 rounded-xl uppercase tracking-widest text-[10px]">Undo
+                                Reset</button>
+                            <button onclick="resetDefaults()" id="btnReset"
+                                class="flex-1 bg-red-900/20 hover:bg-red-900/40 text-red-400 font-bold py-2 rounded-xl uppercase tracking-widest text-[10px] transition-all">Reset
+                                Defaults</button>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+
+            <div class="lg:col-span-9 space-y-6">
+                <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
+                    <div class="glass p-5 rounded-3xl border-l-4 border-cyan-500">
+                        <span class="text-slate-500 text-[10px] font-bold uppercase tracking-widest accent-cyan">Spawn
+                            Avg</span>
+                        <div id="avgStat" class="text-3xl font-black mt-1 accent-cyan tracking-tight">--</div>
+                        <div class="text-[10px] text-slate-500 mt-1">Global: <span id="globalAvgStat"
+                                class="text-slate-300">--</span></div>
+                    </div>
+
+                    <div class="glass p-5 rounded-3xl border-l-4 border-emerald-500">
+                        <span
+                            class="text-slate-500 text-[10px] font-bold uppercase tracking-widest text-emerald-400">Gem
+                            Chance</span>
+                        <div id="gemStat" class="text-3xl font-black mt-1 text-emerald-400 tracking-tight">--
+                        </div>
+                    </div>
+
+                    <div class="glass p-5 rounded-3xl border-l-4 border-indigo-500 bg-indigo-500/5">
+                        <span
+                            class="text-slate-500 text-[10px] font-bold uppercase tracking-widest text-indigo-400">Shafts
+                            / Hr</span>
+                        <div id="shaftsPerHr" class="text-3xl font-black mt-1 text-indigo-300 tracking-tight">--
+                        </div>
+                        <div class="text-[10px] text-slate-500 mt-1">Cycle: <span id="cycleTime"
+                                class="text-indigo-200">--</span>s</div>
+                    </div>
+
+                    <div class="glass p-5 rounded-3xl border-l-4 border-purple-500 bg-purple-500/5">
+                        <span
+                            class="text-slate-500 text-[10px] font-bold uppercase tracking-widest text-purple-400">Jasper
+                            (No Crys)</span>
+                        <div id="jasperShafts" class="text-3xl font-black mt-1 text-purple-300 tracking-tight">
+                            --</div>
+                        <div class="text-[10px] text-slate-500 mt-1"><span id="crystalShafts"
+                                class="text-purple-200 font-bold">--</span> Crystal Shafts/Hr</div>
+                    </div>
+                </div>
+
+                <!-- Jasper Campfire Profit Tiles -->
+                <div class="grid grid-cols-1 sm:grid-cols-3 gap-4">
+                    <div class="glass p-4 rounded-3xl border-l-4 border-amber-600 bg-amber-900/10">
+                        <span class="text-[10px] font-bold uppercase tracking-widest text-amber-400">Jasper 0
+                            Camp</span>
+                        <div id="jasper0CampProfit" class="text-2xl font-black mt-1 text-amber-300 tracking-tight">--
+                        </div>
+                        <div class="text-[9px] text-slate-500 mt-1">
+                            <span id="jasper0CampTime" class="text-amber-200">--</span>s in shaft
+                        </div>
+                    </div>
+                    <div class="glass p-4 rounded-3xl border-l-4 border-orange-500 bg-orange-900/10">
+                        <span class="text-[10px] font-bold uppercase tracking-widest text-orange-400">Jasper 1
+                            Camp</span>
+                        <div id="jasper1CampProfit" class="text-2xl font-black mt-1 text-orange-300 tracking-tight">--
+                        </div>
+                        <div class="text-[9px] text-slate-500 mt-1">
+                            <span id="jasper1CampTime" class="text-orange-200">--</span>s in shaft
+                        </div>
+                    </div>
+                    <div class="glass p-4 rounded-3xl border-l-4 border-red-500 bg-red-900/10">
+                        <span class="text-[10px] font-bold uppercase tracking-widest text-red-400">Jasper 2
+                            Camp</span>
+                        <div id="jasper2CampProfit" class="text-2xl font-black mt-1 text-red-300 tracking-tight">--
+                        </div>
+                        <div class="text-[9px] text-slate-500 mt-1">
+                            <span id="jasper2CampTime" class="text-red-200">--</span>s in shaft
+                        </div>
+                    </div>
+                </div>
+
+                <div class="glass p-6 rounded-3xl h-[280px]">
+                    <canvas id="spawnChart"></canvas>
+                </div>
+
+                <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+                    <div
+                        class="glass p-6 rounded-3xl flex flex-col justify-center border-t-4 border-cyan-500 bg-cyan-500/5">
+                        <h3 class="text-xs font-bold text-cyan-400 uppercase tracking-widest mb-1">Spawning Profit
+                            / Hour
+                        </h3>
+                        <div class="flex justify-between items-end">
+                            <div class="text-[10px] text-slate-400 max-w-[200px]">Total Spawning Economy.
+                                <br>(Lapis + Gems + Glacite + PetXP)
+                            </div>
+                            <div class="text-right">
+                                <div id="spawningProfit"
+                                    class="text-4xl font-black text-cyan-300 tracking-tight drop-shadow-lg">--
+                                </div>
+                                <div class="text-[10px] font-bold text-slate-500 uppercase">
+                                    COINS/HR
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div
+                        class="glass p-6 rounded-3xl flex flex-col justify-center text-center border-t-4 border-[#CB1372] bg-[#CB1372]/5">
+                        <div class="flex items-center justify-center gap-2">
+                            <span
+                                class="text-slate-500 text-[10px] font-bold uppercase tracking-widest text-[#CB1372]">Jasper
+                                Profit / Hour</span>
+                            <span id="apiStatus" class="h-2 w-2 rounded-full bg-red-500 animate-pulse"
+                                title="API Status"></span>
+                        </div>
+                        <div id="jasperProfitTile"
+                            class="text-4xl font-black mt-2 text-[#CB1372] tracking-tight drop-shadow-lg">
+                            --</div>
+                        <div class="text-[10px] text-slate-400 mt-2" id="priceModeStatus">Jasper Economy Only
+                        </div>
+                    </div>
+                </div>
+
+                <div class="glass rounded-3xl overflow-hidden shadow-2xl p-6">
+                    <div class="flex justify-between items-center mb-4">
+                        <h3 class="text-xs font-bold text-slate-400 uppercase tracking-widest">Profit
+                            Breakdown</h3>
+                        <div class="flex gap-2">
+                            <button id="tabNormal" onclick="switchBreakdownTab('normal')"
+                                class="px-3 py-1 text-[10px] font-bold uppercase rounded-lg bg-slate-700 text-slate-400 hover:bg-slate-600">Spawning</button>
+                            <button id="tabJasper" onclick="switchBreakdownTab('jasper')"
+                                class="px-3 py-1 text-[10px] font-bold uppercase rounded-lg bg-[#CB1372] text-white">Jasper
+                                Shafts</button>
+                        </div>
+                    </div>
+
+                    <!-- Spawning View Table -->
+                    <div id="breakdownNormal" class="hidden">
+                        <table class="report-table">
+                            <thead>
+                                <tr>
+                                    <th>Source</th>
+                                    <th>Metric</th>
+                                    <th class="text-right">Est. Value/Hr</th>
+                                </tr>
+                            </thead>
+                            <tbody id="breakdownBody">
+                                <tr>
+                                    <td>Lapis Corpses</td>
+                                    <td><span id="bdLapisCount" class="text-slate-500">--</span></td>
+                                    <td class="text-right text-amber-400" id="bdLapisVal">--</td>
+                                </tr>
+                                <tr>
+                                    <td>Rough Gemstones</td>
+                                    <td><span id="bdGemCount" class="text-slate-500">--</span> blocks/hr | <span
+                                            id="bdRoughGemsHr" class="text-emerald-300">--</span> rough/hr</td>
+                                    <td class="text-right text-emerald-400" id="bdGemVal">--</td>
+                                </tr>
+                                <tr>
+                                    <td>Glacite (Pickobulus)</td>
+                                    <td><span id="bdGlaciteSplit" class="text-slate-500">--</span></td>
+                                    <td class="text-right text-cyan-400" id="bdGlaciteVal">--</td>
+                                </tr>
+                                <tr id="rowCrystal" class="hidden">
+                                    <td class="text-emerald-200">Crystal Shafts (Onyx/Peridot)</td>
+                                    <td><span id="bdCrystalCount" class="text-emerald-200/70">--</span></td>
+                                    <td class="text-right text-emerald-300" id="bdCrystalVal">--</td>
+                                </tr>
+                                <tr>
+                                    <td class="text-pink-300">Main Pet XP</td>
+                                    <td><span id="bdMainPetXP" class="text-pink-200">--</span> XP/hr</td>
+                                    <td class="text-right text-pink-400" id="bdMainPetVal">N/A</td>
+                                </tr>
+                                <tr>
+                                    <td class="text-purple-300">Exp Share Pet XP</td>
+                                    <td><span id="bdExpShareXP" class="text-purple-200">--</span> XP/hr</td>
+                                    <td class="text-right text-purple-400" id="bdExpShareVal">N/A</td>
+                                </tr>
+                                <tr class="bg-slate-900/30">
+                                    <td class="font-bold text-white">Grand Total</td>
+                                    <td></td>
+                                    <td class="text-right font-black text-white text-lg" id="bdTotalVal">--</td>
+                                </tr>
+                            </tbody>
+                        </table>
+                    </div>
+
+                    <!-- Jasper Shafts View -->
+                    <div id="breakdownJasper">
+                        <div class="flex items-center gap-3 mb-3 p-2 bg-slate-900/50 rounded-lg">
+                            <span class="text-[10px] font-bold text-amber-400 uppercase">Campfires:</span>
+                            <select id="jasperCampfireSelect" onchange="updateJasperEconomyBreakdown()"
+                                class="bg-slate-800 border border-slate-700 rounded px-2 py-1 text-[10px] text-amber-300 font-bold">
+                                <option value="0">0 Campfires</option>
+                                <option value="1">1 Campfire</option>
+                                <option value="2">2 Campfires</option>
+                            </select>
+                            <span class="text-[9px] text-slate-500">Time in shaft: <span id="jeTimeInShaft"
+                                    class="text-amber-200">--</span>s</span>
+                        </div>
+                        <table class="report-table">
+                            <thead>
+                                <tr>
+                                    <th>Source</th>
+                                    <th>Metric</th>
+                                    <th class="text-right">Est. Value/Hr</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                <tr class="border-l-2 border-amber-500">
+                                    <td class="text-amber-400 font-bold">Jasper Shafts</td>
+                                    <td><span id="jeJasperCount" class="text-amber-200">--</span> shafts/hr</td>
+                                    <td class="text-right text-amber-400 font-bold" id="jeJasperVal">--</td>
+                                </tr>
+                                <tr class="border-l-2 border-amber-500">
+                                    <td class="text-amber-300">└ Lapis (in Jasper)</td>
+                                    <td><span id="jeLapisInJasper" class="text-amber-200">--</span> corpses</td>
+                                    <td class="text-right text-amber-300" id="jeLapisInJasperVal">--</td>
+                                </tr>
+                                <tr>
+                                    <td class="text-slate-400">Lapis Corpses (reduced)</td>
+                                    <td><span id="jeLapisCount" class="text-slate-500">--</span></td>
+                                    <td class="text-right text-amber-400/70" id="jeLapisVal">--</td>
+                                </tr>
+                                <tr>
+                                    <td class="text-slate-400">Rough Gems (reduced)</td>
+                                    <td><span id="jeGemCount" class="text-slate-500">--</span> blocks/hr</td>
+                                    <td class="text-right text-emerald-400/70" id="jeGemVal">--</td>
+                                </tr>
+                                <tr>
+                                    <td class="text-slate-400">Glacite (reduced)</td>
+                                    <td><span id="jeGlaciteSplit" class="text-slate-500">--</span></td>
+                                    <td class="text-right text-cyan-400/70" id="jeGlaciteVal">--</td>
+                                </tr>
+                                <tr>
+                                    <td class="text-pink-300/70">Main Pet XP (reduced)</td>
+                                    <td><span id="jeMainPetXP" class="text-pink-200/70">--</span> XP/hr</td>
+                                    <td class="text-right text-pink-400/70" id="jeMainPetVal">--</td>
+                                </tr>
+                                <tr>
+                                    <td class="text-purple-300/70">Exp Share (reduced)</td>
+                                    <td><span id="jeExpShareXP" class="text-purple-200/70">--</span> XP/hr</td>
+                                    <td class="text-right text-purple-400/70" id="jeExpShareVal">--</td>
+                                </tr>
+                                <tr class="bg-amber-900/20">
+                                    <td class="font-bold text-amber-300">Jasper Economy Total</td>
+                                    <td class="text-[9px] text-slate-500"><span id="jeTimeAvailable">--</span>%
+                                        normal
+                                        mining</td>
+                                    <td class="text-right font-black text-amber-300 text-lg" id="jeTotalVal">--
+                                    </td>
+                                </tr>
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // --- CONFIG ---
+        const WORKER_URL = "https://hypixel-bazaar-proxy.johnsmith83191.workers.dev";
+
+        // Items for Lapis Corpse
+        const DROP_TABLE = [
+            { name: "Umber Key", id: "UMBER_KEY", qty: 1, chance: 0.04 },
+            { name: "Tungsten Key", id: "TUNGSTEN_KEY", qty: 1, chance: 0.04 },
+            { name: "Refined Umber", id: "REFINED_UMBER", qty: 1, chance: 0.1 },
+            { name: "Refined Tungsten", id: "REFINED_TUNGSTEN", qty: 1, chance: 0.1 },
+            { name: "Refined Mithril", id: "REFINED_MITHRIL", qty: 1, chance: 0.14 },
+            { name: "Refined Titanium", id: "REFINED_TITANIUM", qty: 1, chance: 0.14 },
+            { name: "Glacite Amalgamation", id: "GLACITE_AMALGAMATION", qty: 1, chance: 0.2 },
+            { name: "Bejeweled Handle", id: "BEJEWELED_HANDLE", qty: 1, chance: 0.301 },
+            { name: "Enchanted Umber (4)", id: "ENCHANTED_UMBER", qty: 4, chance: 0.401 },
+            { name: "Enchanted Tungsten (4)", id: "ENCHANTED_TUNGSTEN", qty: 4, chance: 0.401 },
+            { name: "Enchanted Glacite (4)", id: "ENCHANTED_GLACITE", qty: 4, chance: 0.401 },
+            { name: "Green Goblin Egg (4)", id: "GOBLIN_EGG_GREEN", qty: 4, chance: 0.703 },
+            { name: "Yellow Goblin Egg (4)", id: "GOBLIN_EGG_YELLOW", qty: 4, chance: 0.703 },
+            { name: "Red Goblin Egg (4)", id: "GOBLIN_EGG_RED", qty: 4, chance: 0.703 },
+            { name: "Goblin Egg (4)", id: "GOBLIN_EGG", qty: 4, chance: 0.803 },
+            { name: "Fine Onyx Gem (2)", id: "FINE_ONYX_GEM", qty: 2, chance: 1.004 },
+            { name: "Fine Peridot Gem (2)", id: "FINE_PERIDOT_GEM", qty: 2, chance: 1.004 },
+            { name: "Fine Citrine Gem (2)", id: "FINE_CITRINE_GEM", qty: 2, chance: 1.004 },
+            { name: "Fine Aquamarine Gem (2)", id: "FINE_AQUAMARINE_GEM", qty: 2, chance: 1.004 },
+            { name: "Suspicious Scrap", id: "SUSPICIOUS_SCRAP", qty: 1, chance: 1.004 },
+            { name: "Enchanted Umber (2)", id: "ENCHANTED_UMBER", qty: 2, chance: 1.004 },
+            { name: "Enchanted Tungsten (2)", id: "ENCHANTED_TUNGSTEN", qty: 2, chance: 1.004 },
+            { name: "Enchanted Glacite (2)", id: "ENCHANTED_GLACITE", qty: 2, chance: 1.004 },
+            { name: "Glacite Jewel (2)", id: "GLACITE_JEWEL", qty: 2, chance: 1.004 },
+            { name: "Green Goblin Egg (2)", id: "GOBLIN_EGG_GREEN", qty: 2, chance: 1.406 },
+            { name: "Yellow Goblin Egg (2)", id: "GOBLIN_EGG_YELLOW", qty: 2, chance: 1.406 },
+            { name: "Red Goblin Egg (2)", id: "GOBLIN_EGG_RED", qty: 2, chance: 1.406 },
+            { name: "Goblin Egg (2)", id: "GOBLIN_EGG", qty: 2, chance: 1.607 },
+            { name: "Fine Onyx Gem", id: "FINE_ONYX_GEM", qty: 1, chance: 2.008 },
+            { name: "Fine Peridot Gem", id: "FINE_PERIDOT_GEM", qty: 1, chance: 2.008 },
+            { name: "Fine Citrine Gem", id: "FINE_CITRINE_GEM", qty: 1, chance: 2.008 },
+            { name: "Fine Aquamarine Gem", id: "FINE_AQUAMARINE_GEM", qty: 1, chance: 2.008 },
+            { name: "Enchanted Umber", id: "ENCHANTED_UMBER", qty: 1, chance: 2.008 },
+            { name: "Enchanted Tungsten", id: "ENCHANTED_TUNGSTEN", qty: 1, chance: 2.008 },
+            { name: "Enchanted Glacite", id: "ENCHANTED_GLACITE", qty: 1, chance: 2.008 },
+            { name: "Glacite Jewel", id: "GLACITE_JEWEL", qty: 1, chance: 2.008 },
+            { name: "Green Goblin Egg", id: "GOBLIN_EGG_GREEN", qty: 1, chance: 2.812 },
+            { name: "Yellow Goblin Egg", id: "GOBLIN_EGG_YELLOW", qty: 1, chance: 2.812 },
+            { name: "Red Goblin Egg", id: "GOBLIN_EGG_RED", qty: 1, chance: 2.812 },
+            { name: "Flawed Onyx Gem (40)", id: "FLAWED_ONYX_GEM", qty: 40, chance: 3.013 },
+            { name: "Flawed Peridot Gem (40)", id: "FLAWED_PERIDOT_GEM", qty: 40, chance: 3.013 },
+            { name: "Flawed Citrine Gem (40)", id: "FLAWED_CITRINE_GEM", qty: 40, chance: 3.013 },
+            { name: "Flawed Aquamarine Gem (40)", id: "FLAWED_AQUAMARINE_GEM", qty: 40, chance: 3.013 },
+            { name: "Goblin Egg", id: "GOBLIN_EGG", qty: 1, chance: 3.214 },
+            { name: "Flawed Onyx Gem (20)", id: "FLAWED_ONYX_GEM", qty: 20, chance: 4.017 },
+            { name: "Flawed Peridot Gem (20)", id: "FLAWED_PERIDOT_GEM", qty: 20, chance: 4.017 },
+            { name: "Flawed Citrine Gem (20)", id: "FLAWED_CITRINE_GEM", qty: 20, chance: 4.017 },
+            { name: "Flawed Aquamarine Gem (20)", id: "FLAWED_AQUAMARINE_GEM", qty: 20, chance: 4.017 },
+            { name: "Flawed Onyx Gem (10)", id: "FLAWED_ONYX_GEM", qty: 10, chance: 6.026 },
+            { name: "Flawed Peridot Gem (10)", id: "FLAWED_PERIDOT_GEM", qty: 10, chance: 6.026 },
+            { name: "Flawed Citrine Gem (10)", id: "FLAWED_CITRINE_GEM", qty: 10, chance: 6.026 },
+            { name: "Flawed Aquamarine Gem (10)", id: "FLAWED_AQUAMARINE_GEM", qty: 10, chance: 6.026 },
+        ];
+
+        // Items for Gem Calculation (Flawless)
+        const GEM_IDS = [
+            "FLAWLESS_JADE_GEM",
+            "FLAWLESS_AMBER_GEM",
+            "FLAWLESS_AMETHYST_GEM",
+            "FLAWLESS_JADE_GEM",
+            "FLAWLESS_AMBER_GEM",
+            "FLAWLESS_AMETHYST_GEM",
+            "FLAWLESS_SAPPHIRE_GEM"
+        ];
+
+        const CRYSTAL_ITEMS = [
+            { type: 'ONYX', flawless: 'FLAWLESS_ONYX_GEM', perfect: 'PERFECT_ONYX_GEM' },
+            { type: 'PERIDOT', flawless: 'FLAWLESS_PERIDOT_GEM', perfect: 'PERFECT_PERIDOT_GEM' }
+        ];
+
+        // Jasper item ID for jasper shaft calculations
+        const JASPER_ID = "FLAWLESS_JASPER_GEM";
+
+        let myChart = null;
+        let lifetimeSum = 0;
+        let lifetimeCount = 0;
+        let bazaarData = null;
+
+        // Global storage for jasper economy calculations
+        let jasperEconomyData = {
+            jasperShaftsPerHour: 0,
+            time0: 0, time1Total: 0, time2Total: 0,
+            coinsHr0: 0, coinsHr1: 0, coinsHr2: 0,
+            campfireCost: 0,
+            jasperPrice: 0,
+            avgFines: 0,
+            // Normal breakdown values (stored for adjustment)
+            lapisProfitHr: 0, lapisPerHour: 0, lapisValuePerCorpse: 0,
+            gemProfitHr: 0, blocksPerHour: 0,
+            glaciteProfitHr: 0, pct3: 0,
+            mainPetProfitHr: 0, mainPetXPPerHour: 0,
+            expShareProfitHr: 0, expShareXPPerHour: 0,
+            mainPetProfitHr: 0, mainPetXPPerHour: 0,
+            expShareProfitHr: 0, expShareXPPerHour: 0,
+            dmcLevel: 0
+        };
+
+        let currentTab = 'normal';
+
+        // Tab switching function
+        // Tab switching function
+        function switchBreakdownTab(tab) {
+            const normalDiv = document.getElementById('breakdownNormal');
+            const jasperDiv = document.getElementById('breakdownJasper');
+            const tabNormal = document.getElementById('tabNormal');
+            const tabJasper = document.getElementById('tabJasper');
+
+            if (tab === 'normal') {
+                currentTab = 'normal';
+                normalDiv.classList.remove('hidden');
+                jasperDiv.classList.add('hidden');
+
+                // Active Normal
+                tabNormal.className = "px-3 py-1 text-[10px] font-bold uppercase rounded-lg bg-cyan-600 text-white";
+                // Inactive Jasper
+                tabJasper.className = "px-3 py-1 text-[10px] font-bold uppercase rounded-lg bg-slate-700 text-slate-400";
+            } else {
+                currentTab = 'jasper';
+                normalDiv.classList.add('hidden');
+                jasperDiv.classList.remove('hidden');
+                updateJasperEconomyBreakdown();
+
+                // Inactive Normal
+                tabNormal.className = "px-3 py-1 text-[10px] font-bold uppercase rounded-lg bg-slate-700 text-slate-400";
+                // Active Jasper
+                tabJasper.className = "px-3 py-1 text-[10px] font-bold uppercase rounded-lg bg-[#CB1372] text-white";
+            }
+        }
+
+        // Jasper Economy breakdown calculation
+        function updateJasperEconomyBreakdown() {
+            try {
+                const campfires = parseInt(document.getElementById('jasperCampfireSelect').value) || 0;
+                const data = jasperEconomyData;
+
+                if (!data || data.jasperShaftsPerHour <= 0 || data.time0 <= 0) {
+                    return; // No data yet
+                }
+
+                // Select time and profit based on campfire selection
+                let timePerShaft, jasperProfitPerShaft;
+                if (campfires === 0) {
+                    timePerShaft = data.time0;
+                    jasperProfitPerShaft = (data.jasperPrice / 80) * data.avgFines;
+                } else if (campfires === 1) {
+                    timePerShaft = data.time1Total;
+                    const totalFines1 = data.avgFines * (data.time1Total / data.time0);
+                    jasperProfitPerShaft = (data.jasperPrice / 80) * totalFines1 - data.campfireCost;
+                } else {
+                    timePerShaft = data.time2Total;
+                    const totalFines2 = data.avgFines * (data.time2Total / data.time0);
+                    jasperProfitPerShaft = (data.jasperPrice / 80) * totalFines2 - (data.campfireCost * 2);
+                }
+
+                // Time calculations
+                // Calculate actual jasper shafts you can do per hour
+                // = 3600 / (spawn_time + time_in_shaft)
+                // spawn_time = 3600 / raw_jasper_shafts_per_hour
+                const spawnTimePerJasper = 3600 / data.jasperShaftsPerHour; // seconds to spawn one jasper shaft
+                const cycleTime = spawnTimePerJasper + timePerShaft; // total cycle: spawn + mine
+                const actualJasperShaftsPerHour = 3600 / cycleTime;
+
+                const timeInJasperPerHour = actualJasperShaftsPerHour * timePerShaft; // seconds spent in jasper shafts
+                const normalActivityTime = Math.max(0, 3600 - timeInJasperPerHour);
+                const adjustmentFactor = normalActivityTime / 3600;
+
+                // Jasper shaft profits (using actual shafts per hour)
+                const jasperProfitHr = actualJasperShaftsPerHour * jasperProfitPerShaft;
+
+                // Lapis in jasper shafts: 0.5*2 + 0.5*0.5 + DMC per shaft = 1.25 + DMC
+                const lapisPerJasperShaft = (0.5 * 2) + (0.5 * 0.5) + (data.dmcLevel * 0.02);
+                const lapisInJasperPerHour = actualJasperShaftsPerHour * lapisPerJasperShaft;
+                const lapisInJasperProfit = lapisInJasperPerHour * data.lapisValuePerCorpse;
+
+                // Adjusted normal profits
+                const adjustedLapisProfit = data.lapisProfitHr * adjustmentFactor;
+                const adjustedLapisPerHour = data.lapisPerHour * adjustmentFactor;
+                const adjustedGemProfit = data.gemProfitHr * adjustmentFactor;
+                const adjustedBlocksPerHour = data.blocksPerHour * adjustmentFactor;
+                const adjustedGlaciteProfit = data.glaciteProfitHr * adjustmentFactor;
+                const adjustedMainPetProfit = data.mainPetProfitHr * adjustmentFactor;
+                const adjustedMainPetXP = data.mainPetXPPerHour * adjustmentFactor;
+                const adjustedExpShareProfit = data.expShareProfitHr * adjustmentFactor;
+                const adjustedExpShareXP = data.expShareXPPerHour * adjustmentFactor;
+
+                // Total Jasper Economy
+                const totalJasperEconomy = jasperProfitHr + lapisInJasperProfit + adjustedLapisProfit +
+                    adjustedGemProfit + adjustedGlaciteProfit + adjustedMainPetProfit + adjustedExpShareProfit;
+
+                // Update UI
+                document.getElementById('jeTimeInShaft').innerText = timePerShaft.toFixed(0);
+                document.getElementById('jeJasperCount').innerText = actualJasperShaftsPerHour.toFixed(2);
+                document.getElementById('jeJasperVal').innerText = formatNumber(jasperProfitHr);
+
+                document.getElementById('jeLapisInJasper').innerText = lapisInJasperPerHour.toFixed(1);
+                document.getElementById('jeLapisInJasperVal').innerText = formatNumber(lapisInJasperProfit);
+
+                document.getElementById('jeLapisCount').innerText = adjustedLapisPerHour.toFixed(1) + ' corpses/hr';
+                document.getElementById('jeLapisVal').innerText = formatNumber(adjustedLapisProfit);
+
+                document.getElementById('jeGemCount').innerText = formatNumber(adjustedBlocksPerHour);
+                document.getElementById('jeGemVal').innerText = formatNumber(adjustedGemProfit);
+
+                document.getElementById('jeGlaciteSplit').innerText = (data.pct3 * 100 * adjustmentFactor).toFixed(0) + '% effective';
+                document.getElementById('jeGlaciteVal').innerText = formatNumber(adjustedGlaciteProfit);
+
+                document.getElementById('jeMainPetXP').innerText = formatNumber(adjustedMainPetXP);
+                document.getElementById('jeMainPetVal').innerText = formatNumber(adjustedMainPetProfit);
+
+                document.getElementById('jeExpShareXP').innerText = formatNumber(adjustedExpShareXP);
+                document.getElementById('jeExpShareVal').innerText = formatNumber(adjustedExpShareProfit);
+
+                document.getElementById('jeTimeAvailable').innerText = (adjustmentFactor * 100).toFixed(1);
+                document.getElementById('jeTotalVal').innerText = formatNumber(totalJasperEconomy);
+                const tile = document.getElementById('jasperProfitTile');
+                if (tile) tile.innerText = formatNumber(totalJasperEconomy);
+            } catch (e) {
+                console.error('Jasper Economy calculation error:', e);
+            }
+        }
+
+        // --- INIT ---
+        window.addEventListener('load', () => {
+            fetchBazaarPrices();
+        });
+
+        async function fetchBazaarPrices() {
+            const apiStatus = document.getElementById('apiStatus');
+            try {
+                const response = await fetch(WORKER_URL + "?t=" + Date.now());
+                if (!response.ok) throw new Error("Worker Error");
+                const data = await response.json();
+                if (!data.success) throw new Error("API Success False");
+
+                bazaarData = data.products;
+                apiStatus.classList.remove('bg-red-500', 'animate-pulse');
+                apiStatus.classList.add('bg-emerald-500');
+            } catch (e) {
+                console.error(e);
+                apiStatus.classList.remove('bg-red-500');
+                apiStatus.classList.add('bg-orange-500');
+                document.getElementById('priceModeStatus').innerText = "Offline Mode (Prices Unavailable)";
+            }
+        }
+
+        function toggleAdvanced() {
+            const el = document.getElementById('advancedSettings');
+            const arrow = document.getElementById('advArrow');
+            if (el.classList.contains('hidden')) {
+                el.classList.remove('hidden');
+                arrow.style.transform = "rotate(180deg)";
+            } else {
+                el.classList.add('hidden');
+                arrow.style.transform = "rotate(0deg)";
+            }
+        }
+
+        function resetGlobalData() {
+            lifetimeSum = 0;
+            lifetimeCount = 0;
+            document.getElementById('globalAvgStat').innerText = "--";
+            alert("Session Data Reset");
+        }
+
+        function startCompute() {
+            document.getElementById('statusTag').classList.remove('hidden');
+            document.getElementById('controlPanel').classList.add('processing');
+            setTimeout(runCalculation, 50);
+        }
+
+        function formatNumber(num) {
+            if (num >= 1000000) return (num / 1000000).toFixed(2) + "M";
+            if (num >= 1000) return (num / 1000).toFixed(1) + "k";
+            return num.toFixed(0);
+        }
+
+        // --- ECONOMICS & PROFIT ---
+        function calculateEconomics(avgSpawnTime, avgBlocksMined, gemChanceDecimal, pickobulusCounts) {
+            // 1. Get Settings
+            const dmcLvl = parseInt(document.getElementById('dmcLevel').value) || 0;
+            const gftdLevel = parseInt(document.getElementById('gftdLevel').value) || 0;
+            const useSellOrder = document.getElementById('useSellOrder').checked;
+
+            // Player Stats
+            const fortune = parseFloat(document.getElementById('miningFortune').value) || 0;
+            const pristine = parseFloat(document.getElementById('pristine').value) || 0;
+            const dwarvenMetalFortune = parseFloat(document.getElementById('dwarvenMetalFortune').value) || 0;
+
+            // Price Key for Lapis Corpse
+            const priceKey = useSellOrder ? 'buyPrice' : 'sellPrice';
+            const priceMode = useSellOrder ? "Lapis: Sell Offers" : "Lapis: Insta-Sell";
+
+            // Separate Price Key for Spawning Gems
+            const useGemSellOrder = document.getElementById('useGemSellOrder').checked;
+            const gemPriceKey = useGemSellOrder ? 'buyPrice' : 'sellPrice';
+            const gemPriceMode = useGemSellOrder ? " | Gems: Sell Offers" : " | Gems: Insta-Sell";
+            document.getElementById('priceModeStatus').innerText = priceMode + gemPriceMode;
+
+            // Downtime
+            const tPick = parseFloat(document.getElementById('tPick').value) || 4;
+            const tEnter = parseFloat(document.getElementById('tEnter').value) || 3;
+            const tFall = parseFloat(document.getElementById('tFall').value) || 1.5;
+            const tExit = parseFloat(document.getElementById('tExit').value) || 0.5;
+            const fixedDowntime = tPick + tEnter + tFall + tExit;
+
+            // Loot Times
+            const lootTimes = [
+                parseFloat(document.getElementById('loot0').value) || 1,
+                parseFloat(document.getElementById('loot1').value) || 5,
+                parseFloat(document.getElementById('loot2').value) || 9,
+                parseFloat(document.getElementById('loot3').value) || 13,
+                parseFloat(document.getElementById('loot4').value) || 17
+            ];
+
+            // Bad Spawn Rates
+            const bad1 = (parseFloat(document.getElementById('bad1').value) || 25) / 100;
+            const bad2 = (parseFloat(document.getElementById('bad2').value) || 20) / 100;
+            const bad3 = (parseFloat(document.getElementById('bad3').value) || 5) / 100;
+
+            // --- A. LAPIS CORPSE CALC ---
+            let dist = [0.25, 0.50, 0.25, 0, 0];
+            let newDist = [0, 0, 0, 0, 0];
+            for (let i = 0; i < 3; i++) {
+                newDist[i] += dist[i] * 0.75;
+                newDist[i + 1] += dist[i] * 0.25;
+            }
+            dist = [...newDist];
+
+            const pDMC = (dmcLvl / 100) * 0.5;
+            newDist = [0, 0, 0, 0, 0];
+            for (let i = 0; i < 4; i++) {
+                newDist[i] += dist[i] * (1 - pDMC);
+                newDist[i + 1] += dist[i] * pDMC;
+            }
+            dist = [...newDist];
+
+            let finalDist = [...dist];
+            let shift = dist[1] * bad1; finalDist[1] -= shift; finalDist[0] += shift;
+            shift = dist[2] * bad2; finalDist[2] -= shift; finalDist[1] += shift;
+            shift = dist[3] * bad3; finalDist[3] -= shift; finalDist[2] += shift;
+
+            let expectedLapis = 0;
+            let expectedLootTime = 0;
+            for (let k = 0; k <= 4; k++) {
+                expectedLapis += k * finalDist[k];
+                expectedLootTime += lootTimes[k] * finalDist[k];
+            }
+
+            const cycleTime = avgSpawnTime + fixedDowntime + expectedLootTime;
+            const shaftsPerHour = 3600 / cycleTime;
+            const lapisPerHour = shaftsPerHour * expectedLapis;
+
+            document.getElementById('shaftsPerHr').innerText = shaftsPerHour.toFixed(1);
+            document.getElementById('shaftsPerHr').innerText = shaftsPerHour.toFixed(1);
+
+            // --- CRYSTAL TIME ADJUSTMENT ---
+            const calcCrystal = document.getElementById('calcOnyxPeridot')?.checked;
+            const crystalClaimTime = parseFloat(document.getElementById('crystalClaimTime')?.value) || 0;
+
+            let finalShaftsPerHour = shaftsPerHour;
+            const nonGemRate = 1 - gemChanceDecimal;
+            const gemRate = gemChanceDecimal;
+            const probJasperBase = (nonGemRate * 0.0625) + (gemRate * 0.04444);
+            const probCrystalShaft = probJasperBase * 0.2;
+
+            let timeAdjustedCycle = cycleTime;
+            if (calcCrystal && crystalClaimTime > 0) {
+                const extraTimePerShaft = probCrystalShaft * 2 * crystalClaimTime;
+                timeAdjustedCycle += extraTimePerShaft;
+                finalShaftsPerHour = 3600 / timeAdjustedCycle;
+
+                document.getElementById('cycleTime').innerText = timeAdjustedCycle.toFixed(1) + " (adj)";
+                document.getElementById('shaftsPerHr').innerText = finalShaftsPerHour.toFixed(1);
+            } else {
+                document.getElementById('cycleTime').innerText = cycleTime.toFixed(1);
+                document.getElementById('shaftsPerHr').innerText = shaftsPerHour.toFixed(1);
+            }
+
+            const effectiveShaftsPerHour = finalShaftsPerHour;
+
+            // --- B. JASPER SHAFTS ---
+            // Formula: (Shafts * (1-Gem%) * 0.0625) + (Shafts * Gem% * 0.04444)
+            const jasperTotal = (effectiveShaftsPerHour * (1 - gemChanceDecimal) * 0.0625) +
+                (effectiveShaftsPerHour * gemChanceDecimal * 0.04444);
+            const crystalShafts = jasperTotal * 0.2;
+            const nonCrystalShafts = jasperTotal - crystalShafts;
+
+            document.getElementById('jasperShafts').innerText = nonCrystalShafts.toFixed(2);
+            document.getElementById('crystalShafts').innerText = crystalShafts.toFixed(2);
+
+            // --- C. PROFIT CALCULATION ---
+            if (bazaarData) {
+                // 1. Lapis Profit
+                let evPerRoll = 0;
+                DROP_TABLE.forEach(drop => {
+                    const product = bazaarData[drop.id];
+                    if (product) {
+                        const price = product.quick_status[priceKey] || 0;
+                        evPerRoll += price * drop.qty * (drop.chance / 100);
+                    }
+                });
+                const baseRolls = 4.5;
+                const bonusRolls = gftdLevel * 0.002;
+                const totalRolls = baseRolls + bonusRolls;
+                const valuePerCorpse = evPerRoll * totalRolls;
+                const lapisProfitHr = lapisPerHour * valuePerCorpse;
+
+                // 2. Gemstone Profit - NEW FORMULA: E = B * (1 + M/100) * (1 + P*0.79) * S
+                let sumGemPrice = 0;
+                let validGems = 0;
+                GEM_IDS.forEach(id => {
+                    if (bazaarData[id]) {
+                        // Use gemPriceKey (separate from lapis toggle)
+                        const p = bazaarData[id].quick_status[gemPriceKey];
+                        if (p > 0) {
+                            sumGemPrice += p;
+                            validGems++;
+                        }
+                    }
+                });
+                const avgFlawlessPrice = validGems > 0 ? sumGemPrice / validGems : 0;
+                const avgRoughPrice = avgFlawlessPrice / 512000;
+
+                // Calculate blocks per hour first (needed for gem calculation)
+                const blocksPerHour = shaftsPerHour * avgBlocksMined;
+
+                // Gem Formula: roughPerBlock = 4 * (1 + M/100) * (1 + P*0.79)
+                // Then multiply by blocks broken per hour
+                // B = Base drop (4 for all gems)
+                // M = Mining Fortune
+                // P = Pristine
+                const B = 4; // Base drop
+                const M = fortune; // Mining Fortune
+                const P = pristine; // Pristine level
+
+                const roughPerBlock = B * (1 + M / 100) * (1 + P * 0.79);
+                const totalRoughGemsHr = roughPerBlock * blocksPerHour;
+                const gemProfitHr = totalRoughGemsHr * avgRoughPrice;
+
+                // 3. Glacite (Pickobulus) Profit (Weighted) - Uses Dwarven Metal Fortune
+                const glaciteMult = ((dwarvenMetalFortune - 165) / 100) + 1;
+                const totalRuns = pickobulusCounts.total;
+
+                // Calculate Average Glacite Yield per Run based on Pickobulus Phases Reached
+                // Phase 1 (0s): 178 base
+                // Phase 2 (30s): +180 base
+                // Phase 3 (60s): +186 base
+
+                const pct1 = pickobulusCounts.p1_only / totalRuns;
+                const pct2 = pickobulusCounts.p2_only / totalRuns;
+                const pct3 = pickobulusCounts.p3_all / totalRuns;
+
+                // Weighted Average Base Glacite
+                const weightedBase = (pct1 * 178) + (pct2 * (178 + 180)) + (pct3 * (178 + 180 + 186));
+
+                const avgGlacitePerRun = weightedBase * glaciteMult;
+                const glaciteProfitHr = (avgGlacitePerRun * 12) * shaftsPerHour;
+
+                // 4. PET XP CALCULATION
+                // Get Pet XP Settings
+                const miningWisdom = parseFloat(document.getElementById('miningWisdom').value) || 0;
+                const tamingLevel = parseFloat(document.getElementById('tamingLevel').value) || 0;
+                const beastmasterCrest = parseFloat(document.getElementById('beastmasterCrest').value) || 0;
+                const expBoostItem = parseFloat(document.getElementById('expBoostItem').value) || 0;
+                const miscXpBuff = parseFloat(document.getElementById('miscXpBuff').value) || 0;
+                const isMiningPet = document.getElementById('miningPet').checked;
+                const expSharePercent = parseFloat(document.getElementById('expSharePercent').value) || 0;
+                const isExpShareMiningPet = document.getElementById('expShareMiningPet').checked;
+                const isSharingIsCaring = document.getElementById('sharingIsCaring').checked;
+
+                // Base Pet XP per Pickobulus phase
+                const basePetXP_P1 = 8945.25;
+                const basePetXP_P2 = 8589.7;
+                const basePetXP_P3 = 9456.38;
+
+                // Weighted average base pet XP based on pickobulus distribution
+                const weightedBasePetXP = (pct1 * basePetXP_P1) + (pct2 * basePetXP_P2) + (pct3 * basePetXP_P3);
+
+                // Calculate A = sum of bonuses (converted from % to decimal)
+                const A = (tamingLevel / 100) + (beastmasterCrest / 100) + (expBoostItem / 100) + (miscXpBuff / 100);
+
+                // Mining Pet multiplier: 3 if checked, 1 if not
+                const miningPetMult = isMiningPet ? 3 : 1;
+
+                // Main Pet XP Formula: XP = BasePetXP * (1 + MiningWisdom/100) * (1 + A) * MiningPetMult
+                const mainPetXPPerRun = weightedBasePetXP * (1 + miningWisdom / 100) * (1 + A) * miningPetMult;
+                const mainPetXPPerHour = mainPetXPPerRun * shaftsPerHour;
+
+                // Exp Share XP Calculation
+                // ExpShareXP = MainPetXP * (ExpShare% / 100) * ExpShareMiningPetMult * SharingIsCaringMult
+                const expShareMiningPetMult = isExpShareMiningPet ? 1.5 : 0.5;
+                const sharingIsCaringMult = isSharingIsCaring ? 3 : 1;
+                const expShareXPPerHour = mainPetXPPerHour * (expSharePercent / 100) * expShareMiningPetMult * sharingIsCaringMult;
+
+                // Coins per XP conversion
+                const coinsPerXpNonMining = parseFloat(document.getElementById('coinsPerXpNonMining').value) || 1;
+                const coinsPerXpMining = parseFloat(document.getElementById('coinsPerXpMining').value) || 0.35;
+
+                // Main pet uses mining rate if mining pet is checked, non-mining otherwise
+                const mainPetCoinsPerXP = isMiningPet ? coinsPerXpMining : coinsPerXpNonMining;
+                const mainPetProfitHr = mainPetXPPerHour * mainPetCoinsPerXP;
+
+                // Exp share pets use mining rate if exp share mining pet is checked
+                const expShareCoinsPerXP = isExpShareMiningPet ? coinsPerXpMining : coinsPerXpNonMining;
+                const expShareProfitHr = expShareXPPerHour * expShareCoinsPerXP;
+
+                // 5. CRYSTAL PROFIT
+                let crystalProfitHr = 0;
+                if (calcCrystal && bazaarData) {
+                    const calculateCrystalProfit = (type) => {
+                        const item = CRYSTAL_ITEMS.find(i => i.type === type);
+                        if (!item) return 0;
+                        const pPerfect = bazaarData[item.perfect]?.quick_status.sellPrice || 0;
+                        const pFlawless = bazaarData[item.flawless]?.quick_status.buyPrice || 0;
+                        const cost = (5 * pFlawless) + 1400000;
+                        const profit = pPerfect - cost;
+                        return profit > 0 ? profit : 0;
+                    };
+
+                    const onyxProfit = calculateCrystalProfit('ONYX');
+                    const peridotProfit = calculateCrystalProfit('PERIDOT');
+
+                    // Counts: User says "rolled twice" -> assume each type = crystalShafts
+                    const count = crystalShafts;
+                    crystalProfitHr = (count * onyxProfit) + (count * peridotProfit);
+
+                    document.getElementById('rowCrystal').classList.remove('hidden');
+                    document.getElementById('bdCrystalCount').innerText = `${(crystalShafts * 2).toFixed(2)} shafts/hr`;
+                    document.getElementById('bdCrystalVal').innerText = formatNumber(crystalProfitHr);
+                } else {
+                    document.getElementById('rowCrystal').classList.add('hidden');
+                }
+
+                // GRAND TOTAL
+                const totalProfitHr = lapisProfitHr + gemProfitHr + glaciteProfitHr + mainPetProfitHr + expShareProfitHr + crystalProfitHr;
+
+                // Update UI
+                if (currentTab === 'normal') {
+                    // Update Spawning Profit Tile
+                    const tile = document.getElementById('spawningProfit');
+                    if (tile) tile.innerText = formatNumber(totalProfitHr);
+                }
+                // Always update (since tile is static now)
+                const tile = document.getElementById('spawningProfit');
+                if (tile) tile.innerText = formatNumber(totalProfitHr);
+
+                // Breakdown Table
+                document.getElementById('bdLapisCount').innerText = lapisPerHour.toFixed(1) + " corpses/hr";
+                document.getElementById('bdLapisVal').innerText = formatNumber(lapisProfitHr);
+
+                document.getElementById('bdGemCount').innerText = formatNumber(blocksPerHour);
+                document.getElementById('bdRoughGemsHr').innerText = formatNumber(totalRoughGemsHr);
+                document.getElementById('bdGemVal').innerText = formatNumber(gemProfitHr);
+
+                // Glacite Breakdown Text
+                const pct3Str = (pct3 * 100).toFixed(0);
+                document.getElementById('bdGlaciteSplit').innerText = `${pct3Str}% Full Clear (${glaciteMult.toFixed(1)}x)`;
+                document.getElementById('bdGlaciteVal').innerText = formatNumber(glaciteProfitHr);
+
+                // Pet XP Breakdown - now showing coin value
+                document.getElementById('bdMainPetXP').innerText = formatNumber(mainPetXPPerHour);
+                document.getElementById('bdMainPetVal').innerText = formatNumber(mainPetProfitHr);
+                document.getElementById('bdExpShareXP').innerText = formatNumber(expShareXPPerHour);
+                document.getElementById('bdExpShareVal').innerText = formatNumber(expShareProfitHr);
+
+                document.getElementById('bdTotalVal').innerText = formatNumber(totalProfitHr);
+
+                // Store values for Jasper Economy calculations
+                const dmcLevel = parseInt(document.getElementById('dmcLevel').value) || 0;
+                jasperEconomyData.lapisProfitHr = lapisProfitHr;
+                jasperEconomyData.lapisPerHour = lapisPerHour;
+                jasperEconomyData.lapisValuePerCorpse = lapisPerHour > 0 ? lapisProfitHr / lapisPerHour : 0;
+                jasperEconomyData.gemProfitHr = gemProfitHr;
+                jasperEconomyData.blocksPerHour = blocksPerHour;
+                jasperEconomyData.glaciteProfitHr = glaciteProfitHr;
+                jasperEconomyData.pct3 = pct3;
+                jasperEconomyData.mainPetProfitHr = mainPetProfitHr;
+                jasperEconomyData.mainPetXPPerHour = mainPetXPPerHour;
+                jasperEconomyData.expShareProfitHr = expShareProfitHr;
+                jasperEconomyData.expShareXPPerHour = expShareXPPerHour;
+                jasperEconomyData.dmcLevel = dmcLevel;
+
+                // 5. JASPER SHAFT CALCULATIONS
+                calculateJasperProfits(shaftsPerHour, totalProfitHr, priceKey, fortune, pristine, gemChanceDecimal);
+            }
+        }
+
+        // --- JASPER SHAFT CALCULATIONS ---
+        function calculateTimeToMaxCold(coldRes, targetCold = 100, startingCold = 0, startingTime = 0) {
+            // Calculate time to reach targetCold from startingCold, starting at startingTime
+            // Phase boundaries are at 150s intervals
+            // Phase 0 (0-150s): 5 * (1 + coldRes/100) seconds per cold
+            // Phase 1 (150-300s): 5/1.25 * (1 + coldRes/100)
+            // Phase 2 (300-450s): 5/1.25/1.20 * (1 + coldRes/100)
+            // Phase 3 (450-600s): 5/1.25/1.20/1.15 * (1 + coldRes/100)
+            // Phase 4+ (600s+): additional /1.15 each 150s
+
+            const coldMultiplier = 1 + coldRes / 100;
+            let cold = startingCold;
+            let time = startingTime;
+
+            let iterations = 0;
+            const maxIterations = 10000; // Safety limit
+            while (cold < targetCold && iterations < maxIterations) {
+                iterations++;
+                // Determine which phase we're in based on current time
+                const phase = Math.floor(time / 150);
+                const phaseEndTime = (phase + 1) * 150;
+
+                // Calculate divisor for current phase
+                let divisor = 1;
+                if (phase >= 1) divisor *= 1.25;
+                if (phase >= 2) divisor *= 1.20;
+                for (let i = 3; i <= phase; i++) divisor *= 1.15;
+
+                const secPerCold = (5 / divisor) * coldMultiplier;
+
+                // How much cold do we still need?
+                const coldNeeded = targetCold - cold;
+
+                // How much time until this phase ends?
+                const timeLeftInPhase = phaseEndTime - time;
+
+                // How much cold would we gain if we stay in this phase until it ends?
+                const coldGainIfStay = timeLeftInPhase / secPerCold;
+
+                if (coldGainIfStay >= coldNeeded) {
+                    // We reach target cold in this phase
+                    time += coldNeeded * secPerCold;
+                    cold = targetCold;
+                } else {
+                    // We don't reach target cold, move to next phase
+                    cold += coldGainIfStay;
+                    time = phaseEndTime;
+                }
+
+                // Safety break to prevent infinite loop
+                if (time > 7200) break;
+            }
+
+            return time;
+        }
+
+        function calculateJasperProfits(shaftsPerHour, baseProfitRate, priceKey, fortune, pristine, gemChanceDecimal) {
+            // Calculate jasper shafts using spawn probabilities
+            // - Pickobulus/glacite spawns: 0.0625 chance to be jasper table
+            // - Gem spawns: 0.04444 chance to be jasper table
+            const nonGemRate = 1 - (gemChanceDecimal || 0);
+            const gemRate = gemChanceDecimal || 0;
+
+            const jasperRateNonGem = 0.0625;
+            const jasperRateGem = 0.04444;
+
+            // Total Hits on Jasper Table per Hour
+            const totalJasperHits = shaftsPerHour * ((nonGemRate * jasperRateNonGem) + (gemRate * jasperRateGem));
+
+            // Split: 4/5 Normal Jasper, 1/5 Jasper Crystal
+            const jasperNormalShafts = totalJasperHits * 0.8;
+            const jasperCrystalShafts = totalJasperHits * 0.2;
+
+            // Crystal Shafts (Onyx/Peridot) - approx 20% of ALL shafts (totally separate from Jasper Table)
+            // Keeping existing variable name for Onyx/Peridot to avoid breakage
+            const crystalShaftsPerHour = shaftsPerHour * 0.2;
+
+            // Update UI for Jasper/Crystal display
+            // Jasper Tile now shows Normal Jasper Count
+            document.getElementById('jasperShafts').innerText = jasperNormalShafts.toFixed(2);
+            document.getElementById('crystalShafts').innerText = jasperCrystalShafts.toFixed(2);
+
+            const coldRes = parseFloat(document.getElementById('coldResistance').value) || 0;
+            // Normal Jasper Fines Input
+            let avgFines = parseFloat(document.getElementById('avgFinesJasper').value) || 0;
+
+            // Jasper Crystal Options
+            const mineCrystal = document.getElementById('mineJasperCrystal').checked;
+            const finesJasperCrystalInput = parseFloat(document.getElementById('finesJasperCrystal').value) || 0;
+            const crystalInputDiv = document.getElementById('jasperCrystalInputDiv');
+            if (mineCrystal) {
+                crystalInputDiv.classList.remove('hidden');
+            } else {
+                crystalInputDiv.classList.add('hidden');
+            }
+
+            // --- APPLY MODIFIERS ---
+            // 1. Pristine Modifier: Each corpse above 1 adds +1 Pristine
+            const corpsEl = document.getElementById('jasperCorpses');
+            const corpsCounts = corpsEl ? parseInt(corpsEl.value) : 1;
+
+            const useMultiplier = document.getElementById('jasperRateMultiplier')?.checked;
+
+            // Base Pristine (for Tiles - strictly follows dropdown)
+            const bonusPristineBase = (corpsCounts || 1) - 1;
+
+            // Econ Pristine (for Financial Breakdown - uses calculated corpses if checked)
+            let bonusPristineEcon = bonusPristineBase;
+            if (useMultiplier) {
+                const dmc = parseFloat(document.getElementById('dmcLevel').value) || 0;
+                // Formula: 1.25 + DMC
+                const calculatedCorpses = 1.25 + (dmc * 0.01);
+                bonusPristineEcon = calculatedCorpses - 1;
+            }
+
+            // Multiplier = (1 + (P + Bonus) * 0.79) / (1 + P * 0.79)
+            const getPristineMult = (bonus) => (1 + (pristine + bonus) * 0.79) / (1 + pristine * 0.79);
+
+            const pMultBase = getPristineMult(bonusPristineBase);
+            const pMultEcon = getPristineMult(bonusPristineEcon);
+
+            // 2. Fortune Modifier: HOTM perks (+50, +100) + Front Loaded (+150)
+            const f50El = document.getElementById('jasperFortune50');
+            const f100El = document.getElementById('jasperFortune100');
+            const fFrontLoadedEl = document.getElementById('jasperFrontLoaded');
+            const f50 = (f50El && f50El.checked) ? 50 : 0;
+            const f100 = (f100El && f100El.checked) ? 100 : 0;
+            const fFrontLoaded = (fFrontLoadedEl && fFrontLoadedEl.checked) ? 150 : 0;
+            const bonusFortune = f50 + f100 + fFrontLoaded;
+
+            const fMult = (1 + (fortune + bonusFortune) / 100) / (1 + fortune / 100);
+
+            // Apply multipliers to Normal Jasper Fines
+            // Base: Used for the 3 visual cards (Jasper 0/1/2 Camp) - NO Crystal Logic Mixed
+            let avgFinesNormalBase = avgFines * pMultBase * fMult;
+
+            // Econ: Used for breakdown - Mixes Normal + Crystal if toggled
+            let avgFinesNormalEcon = avgFines * pMultEcon * fMult;
+            let avgFinesCrystalEcon = finesJasperCrystalInput * pMultEcon * fMult; // Applying same multipliers to Crystal Shafts
+
+            // Calculate Weighted Average Fines for Economy
+            let actionableShafts = jasperNormalShafts; // Always mine Normal
+            let totalWeightedFines = jasperNormalShafts * avgFinesNormalEcon;
+
+            if (mineCrystal) {
+                actionableShafts += jasperCrystalShafts;
+                totalWeightedFines += jasperCrystalShafts * avgFinesCrystalEcon;
+            }
+
+            // Use weighted average if we have shafts, else 0
+            let avgFinesEcon = actionableShafts > 0 ? (totalWeightedFines / actionableShafts) : 0;
+
+
+            // If no fines entered, show defaults
+            if (avgFines <= 0 || !bazaarData) {
+                document.getElementById('jasper0CampProfit').innerText = '--';
+                document.getElementById('jasper0CampTime').innerText = '--';
+                document.getElementById('jasper1CampProfit').innerText = '--';
+                document.getElementById('jasper1CampTime').innerText = '--';
+                document.getElementById('jasper2CampProfit').innerText = '--';
+                document.getElementById('jasper2CampTime').innerText = '--';
+            } else {
+                // Auto-Switch Logic: If Cold > 0 and Fines > 0, default to Jasper Tab
+                if (coldRes > 0 && avgFines > 0 && currentTab === 'normal') {
+                    switchBreakdownTab('jasper');
+                }
+            }
+
+            // Get jasper price override settings
+            const jasperPriceOverride = parseFloat(document.getElementById('jasperPriceOverride').value) || 0;
+            const useFineJasper = document.getElementById('useFineJasper').checked;
+
+            // Determine jasper price
+            let jasperPrice;
+            if (jasperPriceOverride > 0) {
+                jasperPrice = jasperPriceOverride;
+            } else if (useFineJasper) {
+                const finePrice = bazaarData['FINE_JASPER_GEM']?.quick_status.buyPrice || 0;
+                jasperPrice = finePrice * 80;
+            } else {
+                jasperPrice = bazaarData[JASPER_ID]?.quick_status.buyPrice || 0;
+            }
+
+            const umberPrice = bazaarData['REFINED_UMBER']?.quick_status.buyPrice || 0;
+            const campfireCost = umberPrice + 75000;
+
+            // Base time
+            const time0 = calculateTimeToMaxCold(coldRes, 100, 0, 0);
+
+            // === 0 CAMPFIRE SCENARIO (Uses avgFinesNormalBase for Tile Display) ===
+            const coinsHr0 = (jasperPrice / 80) * avgFinesNormalBase * (3600 / time0);
+
+            // === 1 CAMPFIRE SCENARIO (Uses avgFinesNormalBase) ===
+            const time1End = calculateTimeToMaxCold(coldRes, 100, 50, time0);
+            const time1Window = time1End - time0;
+            const fines1Window = avgFinesNormalBase * (time1Window / time0);
+            const revenue1Window = (fines1Window / 80) * jasperPrice;
+            const coinsHr1 = (revenue1Window - campfireCost) * (3600 / time1Window);
+
+            // === 2 CAMPFIRE SCENARIO (Uses avgFinesNormalBase) ===
+            const time2End = calculateTimeToMaxCold(coldRes, 100, 50, time1End);
+            const time2Window = time2End - time1End;
+            const fines2Window = avgFinesNormalBase * (time2Window / time0);
+            const revenue2Window = (fines2Window / 80) * jasperPrice;
+            const coinsHr2 = (revenue2Window - campfireCost) * (3600 / time2Window);
+
+            // Store jasper data for economy calculations (Uses Weighted Econ values)
+            // Important: calculated 'actionableShafts' is the effective frequency
+            jasperEconomyData.jasperShaftsPerHour = actionableShafts;
+            jasperEconomyData.time0 = time0;
+            jasperEconomyData.time1Total = time1End;
+            jasperEconomyData.time2Total = time2End;
+            jasperEconomyData.campfireCost = campfireCost;
+            jasperEconomyData.jasperPrice = jasperPrice;
+            jasperEconomyData.avgFines = avgFinesEcon; // Weighted Average Fines
+            jasperEconomyData.coinsHr0 = coinsHr0; // Note: This is for Tile 0, not necessarily Breakdown if campfire logic differs
+            jasperEconomyData.coinsHr1 = coinsHr1;
+            jasperEconomyData.coinsHr2 = coinsHr2;
+            jasperEconomyData.lapisValuePerCorpse = 0; // Filled elsewhere? No, calc here.
+
+            // Re-calc Lapis value for econ
+            const useSellOrder = document.getElementById('useSellOrder')?.checked;
+            const pKey = useSellOrder ? 'buyPrice' : 'sellPrice';
+            const lapisPrice = bazaarData['LAPIS_LAZULI_CORPSE']?.quick_status[pKey] || 0;
+            jasperEconomyData.lapisValuePerCorpse = lapisPrice;
+            // Also need Lapis Profit Hr from Normal for adjustments
+            // It's not available here directly, but updateJasperEconomyBreakdown reads it from global `jasperEconomyData.lapisProfitHr` if set elsewhere
+            // Wait, calculateEconomics sets `jasperEconomyData.lapisProfitHr`. 
+            // This function is usually called AFTER calculateEconomics? 
+            // No, calculateEconomics calls `drawBreakdown` maybe?
+            // Actually `updateUI` calls `calculateEconomics`. `calculateEconomics` updates the Lapis table.
+
+            // Note: We need to ensure `jasperEconomyData` properties set in `calculateEconomics` persist or are accessible.
+            // `jasperEconomyData` is a global object. `calculateEconomics` sets `lapisProfitHr` etc.
+            // This function `calculateJasperProfits` updates the Jasper-specific fields.
+            // So order matters? Or just properties. As long as we don't overwrite the object, we are fine.
+            // We are modifying properties of `jasperEconomyData` (global).
+
+            // Update Jasper Economy view if it's visible
+            if (!document.getElementById('breakdownJasper').classList.contains('hidden')) {
+                updateJasperEconomyBreakdown();
+            }
+
+            if (avgFines > 0 && bazaarData) {
+                // Update UI with /hr labels
+                document.getElementById('jasper0CampTime').innerText = time0.toFixed(0);
+                document.getElementById('jasper0CampProfit').innerText = formatNumber(coinsHr0) + '/hr';
+
+                document.getElementById('jasper1CampTime').innerText = time1Window.toFixed(0);
+                document.getElementById('jasper1CampProfit').innerText = formatNumber(coinsHr1) + '/hr';
+
+                document.getElementById('jasper2CampTime').innerText = time2Window.toFixed(0);
+                document.getElementById('jasper2CampProfit').innerText = formatNumber(coinsHr2) + '/hr';
+            }
+        }
+
+        // --- SIMULATION ---
+        function calculateTheory(bonus, targetTime) {
+            let counter = 2000;
+            let survival = 1.0;
+            let expectedTime = 0;
+            let gemProb = 0;
+
+            // Pickobulus Probabilities
+            // p1: < 30s
+            // p2: >= 30s and < 60s
+            // p3: >= 60s
+            let pickProbs = { p1: 0, p2: 0, p3: 0 };
+
+            // Bins for histogram (60 seconds + overflow)
+            // We'll use 61 bins: 0-59s and index 60 for >= 60s
+            const binResoltion = targetTime / 60;
+            let bins = new Array(60).fill(0);
+
+            let p1Chance = (350 / 2) * ((100 + bonus) / (counter - 2)) / 100;
+            let p1Prob = survival * p1Chance;
+            expectedTime += 0 * p1Prob;
+
+            pickProbs.p1 += p1Prob;
+            // P1 spawn happens at t=0 effectively, add to bin 0
+            bins[0] += p1Prob;
+
+            survival -= p1Prob;
+            counter -= 350;
+
+            const totalBlocks = 118;
+            const blockT = targetTime / totalBlocks;
+
+            for (let b = 1; b <= totalBlocks; b++) {
+                let currentTime = b * blockT;
+                let probEvent = 0;
+
+                // Time window logic
+                // P1: < 30
+                // P2: >= 30, < 60
+                // P3: >= 60
+
+                if ((b - 1) * blockT < 30 && currentTime >= 30) {
+                    let p2C = (336 / 2) * ((100 + bonus) / (counter - 2)) / 100;
+                    let p2Prob = survival * p2C;
+                    probEvent += p2Prob;
+                    expectedTime += 30 * p2Prob;
+
+                    // P2 event (at 30s)
+                    pickProbs.p2 += p2Prob;
+
+                    // Add to bin for 30s
+                    const binIdx = Math.min(Math.floor(30 / binResoltion), 59);
+                    bins[binIdx] += p2Prob;
+
+                    survival -= p2Prob;
+                    counter -= 336;
+                }
+                if ((b - 1) * blockT < 60 && currentTime >= 60) {
+                    let p3C = (370 / 2) * ((100 + bonus) / (counter - 2)) / 100;
+                    let p3Prob = survival * p3C;
+                    probEvent += p3Prob;
+                    expectedTime += 60 * p3Prob;
+
+                    // P3 event (at 60s)
+                    pickProbs.p3 += p3Prob;
+
+                    // Add to bin for 60s (or max bin)
+                    const binIdx = Math.min(Math.floor(60 / binResoltion), 59);
+                    bins[binIdx] += p3Prob;
+
+                    survival -= p3Prob;
+                    counter -= 370;
+                }
+
+                if (counter > 8) {
+                    let bc = (100 + bonus) / (counter - 8) / 100;
+                    let blockProb = survival * bc;
+                    gemProb += blockProb;
+
+                    expectedTime += currentTime * blockProb;
+
+                    // Categorize this block spawn for Pickobulus
+                    if (currentTime < 30) pickProbs.p1 += blockProb;
+                    else if (currentTime < 60) pickProbs.p2 += blockProb;
+                    else pickProbs.p3 += blockProb;
+
+                    // Add to bin
+                    const binIdx = Math.min(Math.floor(currentTime / binResoltion), 59);
+                    bins[binIdx] += blockProb;
+
+                    survival -= blockProb;
+                    counter -= 8;
+                } else {
+                    // Out of blocks logic, essentially forced spawn/end
+                    expectedTime += currentTime * survival;
+                    // Categorize
+                    if (currentTime < 30) pickProbs.p1 += survival;
+                    else if (currentTime < 60) pickProbs.p2 += survival;
+                    else pickProbs.p3 += survival;
+
+                    const binIdx = Math.min(Math.floor(currentTime / binResoltion), 59);
+                    bins[binIdx] += survival;
+
+                    survival = 0;
+                    break;
+                }
+            }
+            if (survival > 0) {
+                expectedTime += targetTime * survival;
+                // Survivors count as reaching the end? Typically P3 if targetTime >= 60
+                if (targetTime < 30) pickProbs.p1 += survival;
+                else if (targetTime < 60) pickProbs.p2 += survival;
+                else pickProbs.p3 += survival;
+
+                const binIdx = Math.min(Math.floor(targetTime / binResoltion), 59);
+                bins[binIdx] += survival;
+            }
+
+            return {
+                time: expectedTime,
+                gemPercent: gemProb * 100,
+                pickProbs: pickProbs,
+                bins: bins
+            };
+        }
+
+        function runCalculation() {
+            const bonus = parseFloat(document.getElementById('pctInput').value) || 0;
+            const targetTime = parseFloat(document.getElementById('timeInput').value) || 60;
+            // Removed iterations/simCount usage
+
+            // Calculate exact theoretical values
+            const theory = calculateTheory(bonus, targetTime);
+
+            // Scale formatted bins for the chart (x100 for visual consistency if needed, but density is fine)
+            // Existing chart logic uses raw counts from simulation. Here 'bins' are probabilities (0.0-1.0).
+            // Multiply by 1000 or similar to simulate "counts" for the chart tooltip if desired, 
+            // or just let the chart handle small numbers. 
+            // The chart labels might expect integer counts, but floats work too.
+            // Let's normalize it so it looks like "Spawn Chance %" maybe?
+            // The previous logic accumulated 'bins[i]++' over 'iterations'.
+            // Here 'theory.bins[i]' describes probability.
+            // Let's pass it as is, or maybe scaled to 100%?
+            // Chart logic: 'histogramBins[targetBin] += bins[i] || 0;'
+
+            // Map keys for compatibility with calculateEconomics which expects 'pickCounts' object
+            // Previous: p1_only (count), p2_only (count), p3_all (count), total (iterations)
+            // New: p1 (prob), p2 (prob), p3 (prob)
+            // We can pass `prob * 1000` to simulate a "per 1000 run" stats or update calculateEconomics to handle probs.
+            // Let's update calculateEconomics to handle probabilities directly or normalized to 1.
+
+            // Construct a "virtual" pickCounts object where total = 1.0
+            const pickCounts = {
+                p1_only: theory.pickProbs.p1,
+                p2_only: theory.pickProbs.p2,
+                p3_all: theory.pickProbs.p3,
+                total: 1.0
+            };
+
+            // Average Blocks: Previously 'totalBlocksMined / iterations'
+            // Need to calculate theoretical average blocks?
+            // calculateTheory iterates 'totalBlocks' (118).
+            // We can track avgBlocks inside calculateTheory easily.
+            // For now, let's estimate it or update calculateTheory one more time to be precise.
+            // Actually, let's just make calculateTheory return avgBlocks too.
+            // Re-visiting calculateTheory lightly to add avgBlocks would be clean, 
+            // but for now, average blocks ~ average time / blockTime? 
+            // Roughly yes, but P1/P2/P3 jumps affect it. 
+            // Let's approximate: ExpectedTime / (targetTime / 118)
+            const blockPeriod = targetTime / 118;
+            const avgBlocks = theory.time / blockPeriod;
+
+            // Update UI with theoretical results
+            // Note: updateUI expects "bins" to be an array of counts. 
+            // We pass theoretical probability bins.
+            // We might want to scale them by 100 for "Percent chance in bin".
+            const scaledBins = theory.bins.map(b => b * 100);
+
+            updateUI(theory.time, targetTime, theory.gemPercent, scaledBins, theory.time);
+
+            // Pass data to econ calc
+            calculateEconomics(theory.time, avgBlocks, theory.gemPercent / 100, pickCounts);
+
+            document.getElementById('statusTag').classList.add('hidden');
+            document.getElementById('controlPanel').classList.remove('processing');
+        }
+
+        function updateUI(currentAvg, targetTime, gemPercent, bins, theoryTime) {
+            const globalAvg = lifetimeSum / lifetimeCount;
+            document.getElementById('avgStat').innerText = currentAvg.toFixed(2) + 's';
+            document.getElementById('globalAvgStat').innerText = globalAvg.toFixed(2) + 's';
+
+            document.getElementById('gemStat').innerText = gemPercent.toFixed(2) + '%';
+            document.getElementById('gemStat').innerText = gemPercent.toFixed(2) + '%';
+            // document.getElementById('theoryStat').innerText = theoryTime.toFixed(2) + 's';
+            // document.getElementById('varianceStat').innerText = (varVal > 0 ? "+" : "") + varVal.toFixed(3) + "% VAR";
+
+            // 10 bins for better data visibility
+            const numBins = 10;
+            const binWidth = targetTime / numBins;
+            const histogramBins = new Array(numBins).fill(0);
+            const binStep = targetTime / 60;
+
+            // Map original 60 bins into 10 bins
+            for (let i = 0; i < 60; i++) {
+                const t = i * binStep;
+                const targetBin = Math.min(Math.floor(t / binWidth), numBins - 1);
+                histogramBins[targetBin] += bins[i] || 0;
+            }
+
+            // Generate labels
+            const binLabels = [];
+            for (let i = 0; i < numBins; i++) {
+                const start = (i * binWidth).toFixed(0);
+                const end = ((i + 1) * binWidth).toFixed(0);
+                binLabels.push(i === numBins - 1 ? start + 's+' : start + '-' + end + 's');
+            }
+
+            // Calculate average position for vertical line (scale to 10 bins)
+            const avgBinPosition = (currentAvg / targetTime) * numBins;
+
+            if (myChart) myChart.destroy();
+            myChart = new Chart(document.getElementById('spawnChart'), {
+                type: 'bar',
+                data: {
+                    labels: binLabels,
+                    datasets: [{
+                        data: histogramBins,
+                        backgroundColor: 'rgba(34, 211, 238, 0.5)',
+                        borderColor: '#22d3ee',
+                        borderWidth: 1,
+                        barPercentage: 0.95,
+                        categoryPercentage: 0.95
+                    }]
+                },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    scales: {
+                        y: { display: false },
+                        x: {
+                            grid: { display: false },
+                            ticks: { color: '#64748b', font: { size: 8 } }
+                        }
+                    },
+                    plugins: {
+                        legend: { display: false },
+                        annotation: {
+                            annotations: {
+                                avgLine: {
+                                    type: 'line',
+                                    xMin: avgBinPosition,
+                                    xMax: avgBinPosition,
+                                    borderColor: '#facc15',
+                                    borderWidth: 2,
+                                    borderDash: [5, 5],
+                                    label: {
+                                        display: true,
+                                        content: 'Avg: ' + currentAvg.toFixed(1) + 's',
+                                        position: 'start',
+                                        backgroundColor: 'rgba(250, 204, 21, 0.9)',
+                                        color: '#000',
+                                        font: { size: 8, weight: 'bold' }
+                                    }
+                                }
+                            }
+                        }
+                    }
+                }
+            });
+        }
+
+        let lastSettingsCache = {};
+
+        function resetDefaults() {
+            // 1. Snapshot current settings
+            lastSettingsCache = {};
+            const inputs = document.querySelectorAll('input, select');
+            inputs.forEach(el => {
+                if (el.id) {
+                    lastSettingsCache[el.id] = (el.type === 'checkbox') ? el.checked : el.value;
+                }
+            });
+
+            if (!confirm("Are you sure you want to reset all settings to defaults?")) {
+                return;
+            }
+
+            // 2. Reset to defaults
+            inputs.forEach(el => {
+                if (el.type === 'checkbox') {
+                    el.checked = el.defaultChecked;
+                } else if (el.tagName === 'SELECT') {
+                    let def = Array.from(el.options).find(o => o.defaultSelected);
+                    if (def) el.value = def.value;
+                    else if (el.options.length > 0) el.selectedIndex = 0;
+                } else {
+                    if (el.defaultValue !== undefined) el.value = el.defaultValue;
+                    // Note: Handle 'value' attribute vs property for resets
+                    // el.defaultValue tracks the HTML attribute value.
+                }
+            });
+
+            // 3. Trigger recalculation
+            startCompute();
+
+            // 4. Show Undo
+            const restoreBtn = document.getElementById('btnRestore');
+            const resetBtn = document.getElementById('btnReset');
+
+            restoreBtn.classList.remove('hidden');
+            const origText = "Reset Defaults";
+            resetBtn.innerText = "Reset Complete";
+            setTimeout(() => {
+                resetBtn.innerText = origText;
+            }, 2000);
+        }
+
+        function restoreSettings() {
+            const inputs = document.querySelectorAll('input, select');
+            inputs.forEach(el => {
+                if (el.id && lastSettingsCache[el.id] !== undefined) {
+                    if (el.type === 'checkbox') {
+                        el.checked = lastSettingsCache[el.id];
+                    } else {
+                        el.value = lastSettingsCache[el.id];
+                    }
+                }
+            });
+
+            startCompute();
+
+            document.getElementById('btnRestore').classList.add('hidden');
+        }
+
+        // --- EVENT LISTENERS FOR NEW INPUTS ---
+        ['jasperCorpses', 'jasperFortune50', 'jasperFortune100', 'jasperFrontLoaded', 'mineJasperCrystal', 'finesJasperCrystal',
+            'gftdLevel', 'useSellOrder', 'useGemSellOrder', 'dwarvenMetalFortune', 'pristine', 'miningFortune', 'gftdLevel'].forEach(id => {
+                const el = document.getElementById(id);
+                if (el) el.addEventListener('change', startCompute);
+            });
+    </script>
+</body>
+
+</html>
