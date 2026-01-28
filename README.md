@@ -4,7 +4,7 @@ A profit calculator for gemstone spawning in the Glacite Tunnels. Calculates spa
 
 ## Quick Start
 
-1. Open `lfgemsapiref.html` in your browser
+1. Open `index.html` in your browser
 2. Enter your **Spawn Bonus %** and **Time to Pity**
 3. Fill in your **Mineshaft Stats** (Fortune, Pristine, Cold Resistance, Fines/1L)
 4. Click **Run Engine**
