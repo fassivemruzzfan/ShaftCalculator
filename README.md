@@ -1,6 +1,6 @@
 # Shafting Calculator
 
-A precision economy calculator for Hypixel Skyblock's Glacite Tunnels mineshafts. Calculates spawn rates, loot values, and profit per hour based on your stats.
+A profit calculator for gemstone spawning in the Glacite Tunnels. Calculates spawn rates, loot values, and profit per hour based on your stats.
 
 ## Quick Start
 
@@ -15,8 +15,8 @@ A precision economy calculator for Hypixel Skyblock's Glacite Tunnels mineshafts
 | Field | Description |
 |-------|-------------|
 | **Spawn Bonus %** | COTM 9 + Surveyor |
-| **Time to Pity** | Seconds until guaranteed spawn  |
-| **Mineshaft Stats** | Fortune, Pristine, Cold Resistance, Fines per 1L Jasper |
+| **Time to Pity** | Max number of seconds it takes you to pity a mineshaft  |
+| **Mineshaft Stats** | Fortune, Pristine, Cold Resistance, and average number of Fines you get in a buffless 1L Jasper Shaft |
 
 ### Advanced Settings (Click to Expand)
 
@@ -29,13 +29,15 @@ A precision economy calculator for Hypixel Skyblock's Glacite Tunnels mineshafts
 - Toggle for Fine Jasper pricing
 
 #### Jasper Modifiers
-- **Corpses Looted**: 1-4 corpses per shaft
-- **Fortune Bonuses**: +50/+100 HOTM, +150 Front Loaded
+- **Corpses Looted**: 1-4 corpses per shaft (0L calculates same as 1L just change your average number of fines to match 0L)
+- **Fortune Bonuses**: +50 skymall /+100 mayhem, +150 Front Loaded
 - **Calc. Corpses**: Use calculated corpse rate (1.25L + DMC bonus) (Average corpses is 1.25l, 1.505 max dmc. it does math to increase your average 1l to this value)
 - **Mine Jasper Crystal Shafts**: Enable 80/20 Normal/Crystal split calculation
+- **Pickaxe Ability Cooldown**: If you get mineshaft mayhem -25%, or skymall -20%, or both, just input your average number of fines with the modifier, this makes hourly calc underestimate a little when going off default 1l
+- **Fortunate Freezing**: the math for this is pretty annoying, will add later along with efficiency %'s to support calculating hourly raters including pickaxe cooldown modifiers
 
 #### Crystal Config
-- **Calc. Onyx & Peridot**: Include crystal gems in profit
+- **Calc. Onyx & Peridot**: Include forging crystal gems in profit (calculated at perfect sell offer - 5*flawless instabuy - 14*100k coins opportunity cost)
 - **Claim/Forge Time**: Time penalty for crystal collection - how long it takes to collect + forge (seconds)
 
 #### Lapis + Shaft Config
